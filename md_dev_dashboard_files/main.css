@@ -1,0 +1,186 @@
+//html{overflow:hidden;}
+
+.header{padding:1px;background-color:#777;color:#FFF}
+.header0{background-color:#205081;color:#FFF; margin-bottom:0; padding-bottom:0; width:100%}
+
+.bgColor{	
+	background-color:#f5f5f5;
+	//background-color:#ffffff; //#f4dbc6
+}
+
+.metricView {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.chart {
+	width:100%;height:225px;border:1px solid #A4BED4;
+}
+
+div.gridbox table {
+	background-color:#f5f5f5;	
+}
+
+.circleOnText {
+				border-radius: 50%;
+				behavior: url(PIE.htc); /* remove if you don't care about IE8 */
+
+				width: 25px;
+				height: 25px;
+				padding: 4px;
+
+				background: #ff8500;
+				border: 2px solid #666;
+				color: #000;
+				text-align: center;
+
+				//font: 20px Arial, sans-serif;
+			}
+
+.ovalOnText {
+			width: 30px;
+			height: 20px;
+			padding::4px;
+			background: #ff0000;
+			border-radius: 50%;
+			text-align:center;
+			border: 2px solid #666;
+
+}
+
+.tablewidth {
+	width : 33%;
+}
+
+
+.viewPadding{
+    padding-bottom: .5em;
+	padding-right: 0.5em;
+}
+
+
+
+.tableborder {	
+	border: 2px solid #a4bed4;
+}
+
+.ticketsPrBorder{
+	border: 1px solid #a4bed4;
+	background-color: #f5f5f5;
+}
+
+.metricTotal{
+	color:#491c00;
+	font-size:60; 
+	text-align:center;
+	border-right: thin solid #000000;
+}
+
+.metricsDetail{
+	font-size:20px;
+	font-weight: bold;
+}
+
+.metricDetailLabel{
+	vertical-align:top;
+	font-size:12px;
+	font-weight:bold
+}
+
+.metric_sp{
+	vertical-align:top;
+	font-size:0.8em;
+	font-weight:bold
+}
+
+.metricsPriority1{
+	background-color:#ff0000;
+	color:#000;
+	font-size:30
+}
+
+.metricsPriority2{
+	background-color:#ff8500;
+	color:#000;
+	font-size:30
+}
+
+.metricsPriority3{
+	background-color:#FFCC00;
+	color:#000;
+	font-size:30
+}
+
+.metricsPriority4{
+	background-color:#ffff00;
+	color:#000;
+	font-size:30
+}
+
+.metricsPriorityLabel{
+	font-size:20;
+}
+
+.metricsHeader{
+	font-size:16px;
+	font-weight:bold;
+	vertical-align:top;
+}
+
+.metricTrendUp{
+	font-size:30px;
+	font-weight:bold;
+	color:#ff0000;
+	vertical-align:top;
+}
+
+.metricTrendDown{
+	font-size:30px;
+	font-weight:bold;
+	color:#006400;
+}
+
+.msgfeed {
+	font-size:2em; 
+	font-style:bold;
+	 vertical-align:top; 
+	 padding:0; 
+	 margin:0; 
+	 text-transform:uppercase;
+	 position:fixed;
+	 left:0;
+	 bottom:0;
+	 opacity:0.9;
+	 border-top: 2px solid #777;
+	 text-align:center;
+}
+
+.msgfeed_theme_dark_green{
+	 background-color:#0F8A5F; 
+     color:#fff;
+}
+
+.msgfeed_theme_lite_green{
+	 background-color:#34A65F; 
+     color:#fff;
+}
+
+.msgfeed_theme_dark_red{
+	 background-color:#CC231E; 
+     color:#fff;
+}
+
+.msgfeed_theme_lite_red{
+	 background-color:#F5624D; 
+     color:#fff;
+}
+
+.msgfeed_theme_dark_blue{
+	 background-color:#235E6F; 
+     color:#fff;
+}
+
+.msgfeed_theme_dark_blue2{
+	 background-color:#205081; 
+     color:#fff;
+}

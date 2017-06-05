@@ -1,0 +1,1654 @@
+
+<!-- saved from url=(0073)https://dewdfgwp00746.wdf.sap.corp:8181/md/dashboard/md_metrics_view.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>SAP ME Develeopment Maintenance Dashboard</title>
+		
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta http-equiv="Pragma" content="no-cache">
+		<link href="./main.css" media="all" rel="stylesheet" type="text/css">
+		<script src="./jquery-1.9.1.min.js.download"></script>
+		<script src="./dashboard_config.js.download"></script>
+		
+		<link rel="stylesheet" type="text/css" href="./roboto.css">
+		<link rel="stylesheet" type="text/css" href="./dhtmlx.css">
+	    <script src="./dhtmlx.js.download"></script>
+		<script>
+        var PRI_LOW = 9;
+        var PRI_MEDIUM = 5;
+        var PRI_HIGH = 3;
+        var PRI_VERY_HIGH = 1;
+
+		var FILTER_BY_PRIORITY1 		= "BY_PRIORITY1";
+		var FILTER_BY_PRIORITY2 		= "BY_PRIORITY2";
+		var FILTER_BY_PRIORITY3 		= "BY_PRIORITY3";
+		var FILTER_BY_PRIORITY4 		= "BY_PRIORITY4";
+		var FILTER_BY_TOTAL 			= "BY_TOTAL";
+		var FILTER_BY_IN_PROGRESS		= "BY_IN_PROGRESS";
+		var FILTER_BY_CUSTOMER_ACTION 	= "BY_CUSTOMER_ACTION";
+		var FILTER_BY_PENDING_RELEASE 	= "BY_PENDING_RELEASE";
+		var FILTER_BY_NEW 				= "BY_NEW";
+		var FILTER_BY_UNASSIGNED 		= "BY_UNASSIGNED";
+		var FILTER_BY_SOLUTION_PROVIDED = "BY_SOLUTION_PROVIDED";
+		var FILTER_BY_ON_HOLD			= "BY_ON_HOLD";
+		var FILTER_BY_ORG_DS_ORG		= "BY_ORG_DS_DEV";
+		
+		var CSS_TICKET_STATUS_KEY_CUSTOMER_ACTION   = "E0004";
+		var CSS_TICKET_STATUS_KEY_PENDING_RELEASE   = "E0018";
+		var CSS_TICKET_STATUS_KEY_SOLUTION_PROVIDED = "E0005";
+		var CSS_TICKET_STATUS_KEY_NEW 				= "E0001";
+		var CSS_TICKET_STATUS_KEY_IN_PROCESS 		= "E0002";
+		var CSS_TICKET_STATUS_KEY_ON_HOLD 			= "E0003";
+		var CSS_TICKET_PROCESSING_ORG_DS_DEV		= "DS Development";
+		
+
+        var cssData = [];
+
+        var allTickets;
+        var cleanedUpTickets;
+        var supportTeamTickets;
+        var currentWeekTickets;
+		var totalTickets;
+		var mptMetrics;
+		
+		var mpt_all_count;
+		var mpt_execeed_count;
+		var mpt_adhered_count;
+		var mptPercentage;     
+		
+		var gridWidth; 
+		var productReleaseViewWidth;
+		var loadedTicketsByUserAndCustomer = false;
+		
+        setInterval(function(){window.location.reload(1); }, MD_CONFIG_METRIC_VIEW_REFRESH_INTERVAL);
+		/*setInterval(function(){
+								if(!loadedTicketsByUserAndCustomer && allTickets.loaded && cleanedUpTickets.loaded && supportTeamTickets.loaded){
+									buildMetricsByUserAndCustomer();
+									loadedTicketsByUserAndCustomer=true;
+								}								
+							 }, 1000);*/  
+
+        $(document).ready(function(){		
+            loadMaintenanceData();							
+        });
+
+        function loadMaintenanceData(){
+              allTickets = {name:"allTickets", cssData:[], pri1:0, pri2:0, pri3:0, pri4:0, status_PendingRelease:0, status_CustomerAction:0, status_OnHold:0, status_InProcess:0, status_New:0, unAssignedTickets:0, status_SolutionProvided:0, org_DSDev:0, loaded:false};
+              cleanedUpTickets = {name:"cleanedUpTickets", cssData:[], pri1:0, pri2:0, pri3:0, pri4:0, status_PendingRelease:0, status_CustomerAction:0, status_OnHold:0, status_InProcess:0, status_New:0, unAssignedTickets:0, status_SolutionProvided:0, org_DSDev:0, loaded:false};
+              supportTeamTickets = {name:"supportTeamTickets", cssData:[], pri1:0, pri2:0, pri3:0, pri4:0, status_PendingRelease:0, status_CustomerAction:0, status_OnHold:0, status_InProcess:0, status_New:0, unAssignedTickets:0, status_SolutionProvided:0, org_DSDev:0, loaded:false}; 
+              currentWeekTickets = {name:"currentWeekTickets", cssData:[], pri1:0, pri2:0, pri3:0, pri4:0, status_PendingRelease:0, status_CustomerAction:0, status_OnHold:0, status_InProcess:0, status_New:0, unAssignedTickets:0, status_SolutionProvided:0, org_DSDev:0, loaded:false}; 
+			  totalTickets = {name:"totalTickets", cssData:[], pri1:0, pri2:0, pri3:0, pri4:0, status_PendingRelease:0, status_CustomerAction:0, status_OnHold:0, status_InProcess:0, status_New:0, unAssignedTickets:0, status_SolutionProvided:0, org_DSDev:0, loaded:false};
+              
+			  
+			  mptMetrics = {name:"mptMetrics", mpt_all_count:0, mpt_execeed_count:0, mpt_adhered_count:0, mptPercentage:0}; 
+			  
+			  var cssTicketContWidth = document.getElementById('devSupportAllCont').clientHeight;
+			  var clockViewWidth = document.getElementById('clockView').clientHeight;
+			  document.getElementById("userTicketsCountView").style.height = clockViewWidth * 0.85;
+			  document.getElementById("customerTicketsCountView").style.height = clockViewWidth * 0.85; 
+			  document.getElementById("productReleaseView").style.height = clockViewWidth * 0.85; 
+			  document.getElementById("customerGoLiveView").style.height = clockViewWidth * 0.85; 
+			  //gridWidth = document.getElementById('userTicketsCountView').clientWidth;   
+			  gridWidth = document.getElementById('md_metrics_view').clientWidth / 3;   
+			  productReleaseViewWidth = document.getElementById("productReleaseView").clientWidth;
+			  
+			  	
+			  getMptPercentage(mptMetrics);
+		
+              getCSSData(allTickets, false, false);
+              getCSSData(cleanedUpTickets, true, false);
+              getCSSData(supportTeamTickets, false, false);
+			  getCSSData(totalTickets, false, false);
+              getCSSData(currentWeekTickets, false, true);
+			 
+              buildBacklogTrend();
+              buildWeeklyIncomingMessagesTrend();
+              buildWeeklyMptTrend();
+			  buildProductReleases();
+			  buildCustomerGoLive();
+        }
+		
+		function getCSSData(metrics, checkForCleanedupMessages, onlyCurrentWeekTikcets){	
+            jQuery.support.cors = true;
+            if (!window.location.origin) {
+                window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
+            }
+            var urlStr;
+			if(metrics.name=="allTickets" || metrics.name=="cleanedUpTickets"){
+				urlStr = MD_CONFIG_DEV_SUPPORT_CSS_URL;
+			} else if(metrics.name=="supportTeamTickets"){
+				urlStr = MD_CONFIG_PROD_SUPPORT_CSS_URL;
+			} else if(metrics.name=="totalTickets"){
+				urlStr = MD_CONFIG_TOTAL_TICKETS_CSS_URL;
+			} else if(metrics.name=="currentWeekTickets"){
+				urlStr = MD_CONFIG_CURRENT_WEEK_CSS_URL;
+			}
+			urlStr = urlStr + "&origin=" + window.location.origin;
+			
+            $.ajaxSetup({ cache: false });
+            var userTicketsCount = Object.create(null);
+            var customerTicketsCount = Object.create(null);
+
+            $.ajax({dataType: "xml", url:urlStr, xhrFields: {withCredentials: true}, cache:false, beforeSend: function (xhr) { xhr.setRequestHeader ('Content-Type', 'text/plain'); }, success:function(result){      
+                 $(result).find("_-SID_-CN_IF_DEVDB_INC_OUT_S").each(function(){  
+                                    //Filter Pending Release (E0018) and Customer Action (E0004)
+                                    var statusKey = "OK";
+                                    var currentWeekCheck = "OK";
+									var currentDate =  new Date();									
+                                    var currentWeek = currentDate.getWeekNumber();	
+									var daysInQueue = 0;								
+									//console.log("Current Week: "+ currentWeek);
+                                    var creationDate;
+                                    var weekCreated;
+
+									$(this).find("CREATE_DATE").each(function(){
+										  var createDate =  $(this).text();										 
+										  creationDate =  parseDate(createDate, true);										  
+										  weekCreated = parseDate(createDate, true).getWeekNumber();
+										  if(onlyCurrentWeekTikcets){
+											  //console.log("createionDate="+creationDate+";WeekCreated="+weekCreated);
+											  if(weekCreated != currentWeek){
+												  currentWeekCheck = "NOT_OK";
+											  } 
+										  }
+									});
+									
+									var oneDay = 24*60*60*1000; 
+									daysInQueue = Math.round(Math.abs((currentDate.getTime() - creationDate.getTime())/(24*60*60*1000)));
+
+                                    if(checkForCleanedupMessages){
+                                        $(this).find("STATUS_KEY").each(function(){	
+											//Filter customer Action, Pending Release and Solution Provided.
+                                            if($(this).text()== CSS_TICKET_STATUS_KEY_CUSTOMER_ACTION || $(this).text() == CSS_TICKET_STATUS_KEY_PENDING_RELEASE || $(this).text() == CSS_TICKET_STATUS_KEY_SOLUTION_PROVIDED)	
+                                                statusKey = "NOT_OK";								
+                                        });
+                                    }								
+                                    if(statusKey == 'OK' && currentWeekCheck == 'OK'){
+										$(this).find("PRIORITY_KEY").each(function(){	
+											if($(this).text()==PRI_VERY_HIGH)	
+												metrics.pri1=metrics.pri1 + 1;
+											if($(this).text()==PRI_HIGH)	
+												metrics.pri2=metrics.pri2 + 1;	
+											if($(this).text()==PRI_MEDIUM)	
+												metrics.pri3=metrics.pri3 + 1;
+											if($(this).text()==PRI_LOW)	
+												metrics.pri4=metrics.pri4 + 1;	
+										});
+
+                                        $(this).find("STATUS_KEY").each(function(){
+                                            if($(this).text()== CSS_TICKET_STATUS_KEY_PENDING_RELEASE){
+                                                metrics.status_PendingRelease = metrics.status_PendingRelease + 1;
+                                            }
+                                            if($(this).text()== CSS_TICKET_STATUS_KEY_CUSTOMER_ACTION){
+                                                metrics.status_CustomerAction = metrics.status_CustomerAction + 1;
+                                            }
+                                            if($(this).text()== CSS_TICKET_STATUS_KEY_ON_HOLD){
+                                                metrics.status_OnHold = metrics.status_OnHold + 1;
+                                            }
+                                            if($(this).text()== CSS_TICKET_STATUS_KEY_IN_PROCESS){
+                                                metrics.status_InProcess = metrics.status_InProcess + 1;
+                                            }
+                                            if($(this).text()== CSS_TICKET_STATUS_KEY_NEW){
+                                                metrics.status_New = metrics.status_New + 1;
+                                            }	
+											if($(this).text()== CSS_TICKET_STATUS_KEY_SOLUTION_PROVIDED){
+                                                metrics.status_SolutionProvided = metrics.status_SolutionProvided + 1;
+                                            }									
+                                        });
+										
+										$(this).find("PROCESSING_ORG_TXT").each(function(){
+											processingOrg = $(this).text();
+                                            if(processingOrg == CSS_TICKET_PROCESSING_ORG_DS_DEV){												
+                                                metrics.org_DSDev = metrics.org_DSDev + 1;
+                                            }
+										});										
+
+                                        //Get the details
+                                        var ticket, year, priority, text, status, processor, cssURL, customerName, processingOrg;										
+                                        $(this).find("MESSAGE_NO").each(function(){
+                                            ticket = $(this).text();																
+                                        });
+                                        $(this).find("MESSAGE_YEAR").each(function(){
+                                            year = $(this).text();																
+                                        });
+                                        $(this).find("PRIORITY_DESCR").each(function(){
+                                            priority = $(this).text();										
+                                        });
+                                        $(this).find("DESCRIPTION").each(function(){
+                                            text = $(this).text();
+                                        });
+                                        $(this).find("STATUS_DESCR").each(function(){
+                                            status = $(this).text();
+                                        });	
+                                        $(this).find("URL_MESSAGE").each(function(){
+                                            cssURL = $(this).text();
+                                        });	
+                                        $(this).find("PROCESSOR_NAME").each(function(){
+                                            processor = $(this).text();
+                                            if(processor == ''){
+                                                metrics.unAssignedTickets = metrics.unAssignedTickets + 1;
+                                            } else{
+                                                if(!userTicketsCount[processor]){
+                                                    userTicketsCount[processor] = 1;
+                                                } else {
+                                                    userTicketsCount[processor]=userTicketsCount[processor] + 1; 
+                                                }											
+                                            }
+                                        });	
+                                        $(this).find("CUST_NAME").each(function(){
+                                            customerName = $(this).text();
+
+                                                if(!customerTicketsCount[customerName]){
+                                                    customerTicketsCount[customerName] = 1;
+                                                } else {
+                                                    customerTicketsCount[customerName]=customerTicketsCount[customerName] + 1; 
+                                                }											
+
+                                        });		
+																 	
+                                        metrics.cssData.push([ticket, year, processor, priority, text, status, customerName, creationDate, daysInQueue, processingOrg, cssURL]);	
+                                    }	
+                            }); 
+							metrics.loaded = true;
+							if(metrics.name!='totalTickets'){
+                            	updateCSSTable(metrics);
+							} else {
+								buildChartByStatus(metrics);
+							}
+							//metrics.customerTicketsCount = customerTicketsCount;
+							//metrics.userTicketsCount = userTicketsCount;				
+                            metrics.sortedUserTicketsCountArray = sortUserTicketCounts(userTicketsCount);
+                            metrics.sortedCustomerTicketsCountArray = sortUserTicketCounts(customerTicketsCount);
+                            buildUserAndCustomerMetrics(metrics);
+							logCurrentWeekCount(metrics);
+
+              }, error:function(jqXHR, textStatus, errorThrown){ /*alert(errorThrown);*/ metrics.pri1 = "ERR"; metrics.pri2 = "ERR";metrics.pri4 = "ERR";metrics.pri3 = "ERR";updateCSSTable(metrics);} });
+        }
+		
+		
+		function getMptPercentage(metrics){
+			jQuery.support.cors = true;
+			$.ajaxSetup({ cache: false });
+			if (!window.location.origin) {
+                window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
+            }
+			var urlStr = MD_CONFIG_MPT_ALL_CURRENT_WEEK_CSS_URL + "&origin=" + window.location.origin;
+			$.ajax({dataType: "xml", url:urlStr, xhrFields: {withCredentials: true}, cache:false, beforeSend: function (xhr) { xhr.setRequestHeader ('Content-Type', 'text/plain'); }, success:function(result){  
+				$(result).find("_-SID_-CN_IF_DEVDB_INC_OUT_S").each(function(){
+					metrics.mpt_all_count = metrics.mpt_all_count + 1;	
+				});		
+				console.log("mpt_all_count="+metrics.mpt_all_count);
+				getMptExceededCount(metrics);
+			}, error:function(jqXHR, textStatus, errorThrown){ console.log(errorThrown); } });
+        }
+		
+		function getMptExceededCount(metrics){
+			jQuery.support.cors = true;
+			$.ajaxSetup({ cache: false });
+			if (!window.location.origin) {
+                window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
+            }
+			var urlStr = MD_CONFIG_MPT_EXCEEDED_TICKETS_URL + "&origin=" + window.location.origin;
+			$.ajax({dataType: "xml", url:urlStr, xhrFields: {withCredentials: true}, cache:false, beforeSend: function (xhr) { xhr.setRequestHeader ('Content-Type', 'text/plain'); }, success:function(result){  
+				$(result).find("_-SID_-CN_IF_DEVDB_INC_OUT_S").each(function(){
+					metrics.mpt_execeed_count = metrics.mpt_execeed_count + 1;	
+				});		
+				console.log("mpt_execeed_count="+metrics.mpt_execeed_count);
+				metrics.mpt_adhered_count = metrics.mpt_all_count - metrics.mpt_execeed_count;
+				console.log("mpt_adhered_count="+metrics.mpt_adhered_count);
+				metrics.mptPercentage = Math.round((metrics.mpt_adhered_count / metrics.mpt_all_count) * 100);
+				console.log("mptPercentage="+metrics.mptPercentage);
+				logCurrentWeekCount(metrics);
+			}, error:function(jqXHR, textStatus, errorThrown){ console.log(errorThrown); } });
+        }
+
+        function updateCSSTable(metrics){
+			if(document.getElementById(metrics.name+"_pri1")){
+            	document.getElementById(metrics.name+"_pri1").innerHTML = (metrics.pri1);
+				document.getElementById(metrics.name+"_pri1").onclick 	= function(){openFilteredTickets(metrics, FILTER_BY_PRIORITY1)};
+			}
+			if(document.getElementById(metrics.name+"_pri2")){	
+            	document.getElementById(metrics.name+"_pri2").innerHTML =(metrics.pri2);
+				document.getElementById(metrics.name+"_pri2").onclick 	= function(){openFilteredTickets(metrics, FILTER_BY_PRIORITY2)};
+			}
+			if(document.getElementById(metrics.name+"_pri3")){
+            	document.getElementById(metrics.name+"_pri3").innerHTML =(metrics.pri3);
+				document.getElementById(metrics.name+"_pri3").onclick 	= function(){openFilteredTickets(metrics, FILTER_BY_PRIORITY3)};
+			}
+			if(document.getElementById(metrics.name+"_pri4")){
+            	document.getElementById(metrics.name+"_pri4").innerHTML =(metrics.pri4);
+				document.getElementById(metrics.name+"_pri4").onclick 	= function(){openFilteredTickets(metrics, FILTER_BY_PRIORITY4)};
+			}
+            if(metrics.pri1 != "ERR" && metrics.pri2 != "ERR" && metrics.pri3 != "ERR" && metrics.pri4 != "ERR"){		
+				//var lastWeekTotal = localStorage.getItem(getLocalStorageKeyForLastWeek(metrics));
+				var lastWeekTotal = localStorage.getItem("lastWeekCount_"+metrics.name);
+				var currentTotal = metrics.pri1+metrics.pri2+metrics.pri3+metrics.pri4;
+				var trendSymbol = "";
+				var trendTag = "";
+				if(lastWeekTotal){
+					if(currentTotal > lastWeekTotal){
+						trendSymbol = "&#8593;";						
+						trendTag = "<span class='metricTrendUp'>"+trendSymbol +"</span>"
+					} else if(currentTotal < lastWeekTotal && metrics.name != 'currentWeekTickets'){
+						trendSymbol = "&#8595;";
+						trendTag = "<span class='metricTrendDown'>"+trendSymbol +"</span>"
+					}
+				}
+				if(document.getElementById(metrics.name+"_total")){
+                	document.getElementById(metrics.name+"_total").innerHTML = currentTotal + trendTag;
+					document.getElementById(metrics.name+"_total").onclick 	= function(){openFilteredTickets(metrics, FILTER_BY_TOTAL)};
+				}
+            }
+			
+			if(document.getElementById(metrics.name+"_org_DSDev")){
+            	document.getElementById(metrics.name+"_org_DSDev").innerHTML =(metrics.org_DSDev);
+				document.getElementById(metrics.name+"_org_DSDev").onclick 	= function(){openFilteredTickets(metrics, FILTER_BY_ORG_DS_ORG)};
+			}
+					
+			
+			if(document.getElementById(metrics.name+"_pr")){
+            	document.getElementById(metrics.name+"_pr").innerHTML =(metrics.status_PendingRelease);
+				document.getElementById(metrics.name+"_pr").onclick 	= function(){openFilteredTickets(metrics, FILTER_BY_PENDING_RELEASE)};
+			}
+			if(document.getElementById(metrics.name+"_ca")){
+            	document.getElementById(metrics.name+"_ca").innerHTML =(metrics.status_CustomerAction);
+				document.getElementById(metrics.name+"_ca").onclick 	= function(){openFilteredTickets(metrics, FILTER_BY_CUSTOMER_ACTION)};
+			}
+			if(document.getElementById(metrics.name+"_oh")){
+            	document.getElementById(metrics.name+"_oh").innerHTML =(metrics.status_OnHold);
+				document.getElementById(metrics.name+"_oh").onclick 	= function(){openFilteredTickets(metrics, FILTER_BY_ON_HOLD)};
+			}
+			if(document.getElementById(metrics.name+"_ip")){
+            	document.getElementById(metrics.name+"_ip").innerHTML =(metrics.status_InProcess);
+				document.getElementById(metrics.name+"_ip").onclick 	= function(){openFilteredTickets(metrics, FILTER_BY_IN_PROGRESS)};
+			}
+			if(document.getElementById(metrics.name+"_ne")){
+            	document.getElementById(metrics.name+"_ne").innerHTML =(metrics.status_New);
+				document.getElementById(metrics.name+"_ne").onclick 	= function(){openFilteredTickets(metrics, FILTER_BY_NEW)};
+			}
+			if(document.getElementById(metrics.name+"_sp")){
+				document.getElementById(metrics.name+"_sp").innerHTML =(metrics.status_SolutionProvided);
+				document.getElementById(metrics.name+"_sp").onclick 	= function(){openFilteredTickets(metrics, FILTER_BY_SOLUTION_PROVIDED)};												
+			}
+			if(document.getElementById(metrics.name+"_ua")){
+            	document.getElementById(metrics.name+"_ua").innerHTML =(metrics.unAssignedTickets);
+				document.getElementById(metrics.name+"_ua").onclick 	= function(){openFilteredTickets(metrics, FILTER_BY_UNASSIGNED)};
+			}
+        }
+		
+		function openFilteredTickets(metrics, filterBy){
+			if(filterBy == FILTER_BY_PRIORITY1){			
+				cssData = metrics.cssData.filter(filterByPriority1);
+				function filterByPriority1(object){
+					return object[3] == "Very high";
+				}				
+			} else if(filterBy == FILTER_BY_PRIORITY2){			
+				cssData = metrics.cssData.filter(filterByPriority2);
+				function filterByPriority2(object){
+					return object[3] == "High";
+				}				
+			} else if(filterBy == FILTER_BY_PRIORITY3){			
+				cssData = metrics.cssData.filter(filterByPriority3);
+				function filterByPriority3(object){
+					return object[3] == "Medium";
+				}				
+			} else if(filterBy == FILTER_BY_PRIORITY4){			
+				cssData = metrics.cssData.filter(filterByPriority4);
+				function filterByPriority4(object){
+					return object[3] == "Low";
+				}				
+			} else if(filterBy == FILTER_BY_TOTAL){			
+				cssData = metrics.cssData;
+			} else if(filterBy == FILTER_BY_PENDING_RELEASE){			
+				cssData = metrics.cssData.filter(filterByPendingRelease);
+				function filterByPendingRelease(object){
+					return object[5] == "Pending Release";
+				}				
+			} else if(filterBy == FILTER_BY_CUSTOMER_ACTION){			
+				cssData = metrics.cssData.filter(filterByCustomerAction);
+				function filterByCustomerAction(object){
+					return object[5] == "Customer Action";
+				}				
+			} else if(filterBy == FILTER_BY_IN_PROGRESS){			
+				cssData = metrics.cssData.filter(filterByInProgress);
+				function filterByInProgress(object){
+					return object[5] == "In Process";
+				}				
+			} else if(filterBy == FILTER_BY_NEW){			
+				cssData = metrics.cssData.filter(filterByNew);
+				function filterByNew(object){
+					return object[5] == "New";
+				}				
+			} else if(filterBy == FILTER_BY_SOLUTION_PROVIDED){			
+				cssData = metrics.cssData.filter(filterBySolutionProvided);
+				function filterBySolutionProvided(object){
+					return object[5] == "Solution Provided";
+				}				
+			} else if(filterBy == FILTER_BY_ON_HOLD){			
+				cssData = metrics.cssData.filter(filterByOnHold);
+				function filterByOnHold(object){
+					return object[5] == "On Hold";
+				}				
+			} else if(filterBy == FILTER_BY_UNASSIGNED){			
+				cssData = metrics.cssData.filter(filterByUnAssigned);
+				function filterByUnAssigned(object){
+               		 return object[2] == "";
+           		}				
+			} else if(filterBy == FILTER_BY_ORG_DS_ORG){			
+				cssData = metrics.cssData.filter(filterByOrgDSDev);
+				function filterByOrgDSDev(object){
+               		 return object[9] == CSS_TICKET_PROCESSING_ORG_DS_DEV;
+           		}				
+			}
+            var popup = window.open("md_css_detail_view.html", "_blank","resizable=yes, toolbar = no, status = no");
+		}
+
+        function launchCSSDetailForUser(rowIndex){
+            console.log(totalTickets.sortedUserTicketsCountArray[rowIndex-1]);
+            var user = totalTickets.sortedUserTicketsCountArray[rowIndex-1][0]; 
+            cssData = totalTickets.cssData.filter(filterUser);
+            function filterUser(userObject){
+                return userObject[2] == user;
+            }
+            var popup = window.open("md_css_detail_view.html", "_blank","resizable=yes, toolbar = no, status = no");
+        }
+	
+        function launchCSSDetailForCustomer(rowIndex){
+            console.log(totalTickets.sortedCustomerTicketsCountArray[rowIndex-1]);
+            var customer = totalTickets.sortedCustomerTicketsCountArray[rowIndex-1][0]; 
+            cssData = totalTickets.cssData.filter(filterCustomer);
+            function filterCustomer(customerObject){
+                return customerObject[6] == customer;
+            }
+            var popup = window.open("md_css_detail_view.html", "_blank","resizable=yes, toolbar = no, status = no");
+        }
+
+        function sortUserTicketCounts(userTicketsCount){
+            var sortable = [];
+            for (var user in userTicketsCount) {
+                sortable.push([user, userTicketsCount[user]]);
+            }
+            sortable.sort(function(a, b) {
+                    return b[1]-a[1];
+            });
+            return sortable;
+        }
+
+        function buildUserAndCustomerMetrics(metrics){
+              if(metrics.name == 'totalTickets'){					
+                    mygrid = new dhtmlXGridObject('userTicketsCountView');	
+                    mygrid.setImagePath("dhtmlx/codebase/imgs/");
+                    mygrid.setHeader("Processor, #", null, ["font-weight:bold;text-align:left;","font-weight:bold;text-align:center;"]);					
+                    mygrid.setInitWidths(gridWidth*.8+", *");
+                    mygrid.setColAlign("left,center");
+                    mygrid.setColTypes("ro,ro");
+                    mygrid.setColSorting("str,int");
+                    mygrid.enableAutoWidth(true);
+                    mygrid.enableAutoHeight(false);							
+                    mygrid.attachEvent("onRowDblClicked", launchCSSDetailForUser);					
+                    mygrid.init();
+                    //mygrid.setSkin("sb_dark");//dhx_skyblue  (xp, mt, gray, light, clear, modern, sb_dark)
+                    mygrid._setAutoResize();
+                    //mygrid.enableAlterCss("even","uneven");	
+                    mygrid.setStyle("padding:3px;font-size:1.0em;font-weight:bold", "font-size:1.2em;font-weight:bold;background-color:yellowsand;","", "");
+					//mygrid.objBox.style.overflowY = "hidden";
+                    mygrid.parse(metrics.sortedUserTicketsCountArray,"jsarray");
+					//grid.setStyle(ss_header, ss_grid, ss_selCell, ss_selRow);
+					/*mygrid.setStyle(
+    					"", "background-color:#f5f5f5;","", ""
+					);*/
+					
+					
+
+                    mygrid1 = new dhtmlXGridObject('customerTicketsCountView');	
+                    mygrid1.setImagePath("dhtmlx/codebase/imgs/");
+                    mygrid1.setHeader("Customer, #", null, ["font-weight:bold;text-align:left;","font-weight:bold;text-align:center;"]);
+                    mygrid1.setInitWidths(gridWidth*.8+", *");
+                    mygrid1.setColAlign("left,center");
+                    mygrid1.setColTypes("ro,ro");
+                    mygrid1.setColSorting("str,int");
+                    mygrid1.enableAutoWidth(true);
+                    mygrid1.enableAutoHeight(false);							
+                    mygrid1.attachEvent("onRowDblClicked", launchCSSDetailForCustomer);
+                    mygrid1.init();
+                    //mygrid1.setSkin("sb_dark");//dhx_skyblue  (xp, mt, gray, light, clear, modern, sb_dark)
+                    mygrid1._setAutoResize();
+                    //mygrid.enableAlterCss("even","uneven");	
+                    mygrid1.setStyle("padding:3px;font-size:1.0em;font-weight:bold", "font-size:1.2em;font-weight:bold","", "");
+                    mygrid1.parse(metrics.sortedCustomerTicketsCountArray,"jsarray");	
+					//grid.setStyle(ss_header, ss_grid, ss_selCell, ss_selRow);
+					/*mygrid1.setStyle(
+    					"", "background-color:#f5f5f5;","", ""
+					);*/  
+                }
+        }
+		
+		/*
+		function buildMetricsByUserAndCustomer(){
+					 var ticketsByUser = Object.create(null);
+           			 var ticketsByCustomer = Object.create(null);
+					 
+					 //Build tickets by customer
+					 var customerKeysFromDevSupport = Object.keys(allTickets.customerTicketsCount);									 
+					 for(var i=0;i<customerKeysFromDevSupport.length;i++){
+						var customer = customerKeysFromDevSupport[i]; 
+						if(!ticketsByCustomer[customer]){
+							ticketsByCustomer[customer] = allTickets.customerTicketsCount[customer];
+						} else {
+							ticketsByCustomer[customer] = ticketsByCustomer[customer] + allTickets.customerTicketsCount[customer];
+						}					 	
+					 }
+					 var customerKeysFromProductSupport = Object.keys(supportTeamTickets.customerTicketsCount);	
+					 for(var i=0;i<customerKeysFromProductSupport.length;i++){
+						var customer = customerKeysFromProductSupport[i]; 
+						if(!ticketsByCustomer[customer]){
+							ticketsByCustomer[customer] = supportTeamTickets.customerTicketsCount[customer];
+						} else {
+							ticketsByCustomer[customer] = ticketsByCustomer[customer] + supportTeamTickets.customerTicketsCount[customer];
+						}					 	
+					 }
+					 ticketsByCustomer = sortUserTicketCounts(ticketsByCustomer);
+					 
+					 
+					 //Build tickets by user
+					 var userKeysFromDevSupport = Object.keys(allTickets.userTicketsCount);									 
+					 for(var i=0;i<userKeysFromDevSupport.length;i++){
+						var user = userKeysFromDevSupport[i]; 
+						if(!ticketsByUser[user]){
+							ticketsByUser[user] = allTickets.userTicketsCount[user];
+						} else {
+							ticketsByUser[user] = ticketsByUser[user] + allTickets.userTicketsCount[user];
+						}					 	
+					 }
+					 var userKeysFromProductSupport = Object.keys(supportTeamTickets.userTicketsCount);	
+					 for(var i=0;i<userKeysFromProductSupport.length;i++){
+						var user = userKeysFromProductSupport[i]; 
+						if(!ticketsByUser[user]){
+							ticketsByUser[user] = supportTeamTickets.userTicketsCount[user];
+						} else {
+							ticketsByUser[user] = ticketsByUser[user] + supportTeamTickets.userTicketsCount[user];
+						}					 	
+					 }
+					 ticketsByUser = sortUserTicketCounts(ticketsByUser);
+					 
+					 var userTotal = 0;
+					 for(var key in userTotal){
+					 	userTotal = userTotal + ticketsByUser[key]
+					 }
+					 console.log("user Total="+userTotal);
+					 
+					 
+						
+                    mygrid = new dhtmlXGridObject('userTicketsCountView');	
+                    mygrid.setImagePath("dhtmlx/codebase/imgs/");
+                    mygrid.setHeader("img:[images/person.png]Processor, #", null, ["font-weight:bold;text-align:left;","font-weight:bold;text-align:center;"]);					
+                    mygrid.setInitWidths(gridWidth*.8+", *");
+                    mygrid.setColAlign("left,center");
+                    mygrid.setColTypes("ro,ro");
+                    mygrid.setColSorting("str,int");
+                    mygrid.enableAutoWidth(true);
+                    mygrid.enableAutoHeight(false);							
+                    mygrid.attachEvent("onRowDblClicked", launchCSSDetailForUser);					
+                    mygrid.init();
+                    //mygrid.setSkin("sb_dark");//dhx_skyblue  (xp, mt, gray, light, clear, modern, sb_dark)
+                    mygrid._setAutoResize();
+                    //mygrid.enableAlterCss("even","uneven");	
+                    mygrid.setStyle("padding:3px;font-size:15px;font-weight:bold", "font-size:20px;font-weight:bold;background-color:yellowsand;","", "");
+					//mygrid.objBox.style.overflowY = "hidden";
+                    mygrid.parse(ticketsByUser,"jsarray");
+					//grid.setStyle(ss_header, ss_grid, ss_selCell, ss_selRow);
+					
+					
+
+                    mygrid1 = new dhtmlXGridObject('customerTicketsCountView');	
+                    mygrid1.setImagePath("dhtmlx/codebase/imgs/");
+                    mygrid1.setHeader("Customer, #", null, ["font-weight:bold;text-align:left;","font-weight:bold;text-align:center;"]);
+                    mygrid1.setInitWidths(gridWidth*.8+", *");
+                    mygrid1.setColAlign("left,center");
+                    mygrid1.setColTypes("ro,ro");
+                    mygrid1.setColSorting("str,int");
+                    mygrid1.enableAutoWidth(true);
+                    mygrid1.enableAutoHeight(false);							
+                    mygrid1.attachEvent("onRowDblClicked", launchCSSDetailForCustomer);
+                    mygrid1.init();
+                    //mygrid1.setSkin("sb_dark");//dhx_skyblue  (xp, mt, gray, light, clear, modern, sb_dark)
+                    mygrid1._setAutoResize();
+                    //mygrid.enableAlterCss("even","uneven");	
+                    mygrid1.setStyle("padding:3px;font-size:15px;font-weight:bold", "font-size:20px;font-weight:bold","", "");
+                    mygrid1.parse(ticketsByCustomer,"jsarray");	
+					//grid.setStyle(ss_header, ss_grid, ss_selCell, ss_selRow);
+					
+        }
+		*/
+		
+		function buildChartByStatus(metrics){
+			var ticketsByPriorityData = [];
+			ticketsByPriorityData.push({statusCount: metrics.status_New, status: "New", color: "#ee3639" });
+			ticketsByPriorityData.push({statusCount: metrics.status_InProcess, status: "In Process", color: "#ee9e36" });
+			ticketsByPriorityData.push({statusCount: metrics.status_CustomerAction, status: "Customer Action", color: "#36d3ee" });
+			ticketsByPriorityData.push({statusCount: metrics.status_OnHold, status: "On Hold", color: "#a9ee36" });
+			ticketsByPriorityData.push({statusCount: metrics.status_PendingRelease, status: "Pending Rel.", color: "#eeea36" });
+			ticketsByPriorityData.push({statusCount: metrics.status_SolutionProvided, status: "Sol. Provided", color: "#367fee" });
+					
+				 var pieChart = new dhtmlXChart({
+						view: "donut",
+						container: metrics.name+"_chartByStatus",
+						value: "#statusCount#",
+						color: "#color#",
+						legend: "#status#",
+						tooltip:"#status# (#statusCount#)",
+						labelOffset:15,
+						label:function(obj){
+							var sum = pieChart.sum("#statusCount#");
+							var text = Math.round(parseFloat(obj.statusCount)/sum*100)+"%";
+							return "<div class='label'>"+text+"</div>";
+						},						
+						shadow: 0,
+						gradient: 1,
+						legend: {
+							width: 200,
+							align: "right",
+							valign: "middle",
+							template: "#status# (#statusCount#)"
+						}
+					});
+				pieChart.parse(ticketsByPriorityData, "json");
+				pieChart.attachEvent("onItemClick", function(id){
+					var status = pieChart.get(id).status;
+					if(status == "New"){
+						openFilteredTickets(metrics, FILTER_BY_NEW);
+					} else if(status == "In Process"){
+						openFilteredTickets(metrics, FILTER_BY_IN_PROGRESS);
+					} else if(status == "Pending Rel."){
+						openFilteredTickets(metrics, FILTER_BY_PENDING_RELEASE);
+					} else if(status == "Customer Action"){
+						openFilteredTickets(metrics, FILTER_BY_CUSTOMER_ACTION);
+					} else if(status == "On Hold"){
+						openFilteredTickets(metrics, FILTER_BY_ON_HOLD);
+					} else if(status == "Sol. Provided"){
+						openFilteredTickets(metrics, FILTER_BY_SOLUTION_PROVIDED);
+					}
+					return true;
+				});
+			
+		}
+		
+        function buildBacklogTrend(){	
+              jQuery.support.cors = true;
+                if (!window.location.origin) {
+                  window.location.origin = "https://localhost:8999/";
+              }
+              $.ajaxSetup({ cache: false });		
+              $.ajax({dataType: "json", url:MD_CONFIG_BACKLOG_TREND_URL, xhrFields: {/*withCredentials: true*/}, cache:false, beforeSend: function (xhr) { xhr.setRequestHeader ('Content-Type', 'text/plain'); }, success:function(result){   
+			  	   localStorage.setItem("lastWeekCount_allTickets", result[result.length-1].devSupportAllTickets);
+				   localStorage.setItem("lastWeekCount_cleanedUpTickets", result[result.length-1].devSupportActiveTickets);
+				   localStorage.setItem("lastWeekCount_supportTeamTickets", result[result.length-1].productSupportAllTickets);				   		   
+                   addBacklogTrendDataChart(result);
+                }, error:function(jqXHR, textStatus, errorThrown){ console.log("Error on buildBacklogTrend(): " + errorThrown);} });
+      }
+
+	  function buildWeeklyIncomingMessagesTrend(){	
+		  jQuery.support.cors = true;
+		  if (!window.location.origin) {
+			  window.location.origin = "https://localhost:8999/";
+		  }
+		  $.ajaxSetup({ cache: false });		
+		  $.ajax({dataType: "json", url:MD_CONFIG_WEEKLY_INCOMING_MESSAGES_TREND_URL, xhrFields: {/*withCredentials: true*/}, cache:false, beforeSend: function (xhr) { xhr.setRequestHeader ('Content-Type', 'text/plain'); }, success:function(result){  
+		  	   localStorage.setItem("lastWeekCount_currentWeekTickets", result[result.length-1].ticketsCnt);		    
+			   addWeeklyIncomingMessagesTrendChart(result);
+			}, error:function(jqXHR, textStatus, errorThrown){ console.log("Error on buildWeeklyIncomingMessagesTrend(): "+errorThrown);} });
+  }
+	  function buildWeeklyMptTrend(){	
+		  jQuery.support.cors = true;
+		  if (!window.location.origin) {
+			  window.location.origin = "https://localhost:8999/";
+		  }
+		  $.ajaxSetup({ cache: false });
+		  $.ajax({dataType: "json", url:MD_CONFIG_WEEKLY_MPT_TREND_URL, xhrFields: {/*withCredentials: true*/}, cache:false, beforeSend: function (xhr) { xhr.setRequestHeader ('Content-Type', 'text/plain'); }, success:function(result){      
+			   addWeeklyMptTrendChart(result);
+			}, error:function(jqXHR, textStatus, errorThrown){ console.log("Error on buildWeeklyMptTrend(): "+errorThrown);} });
+  	}
+	
+	function buildProductReleases(){	
+              jQuery.support.cors = true;
+                if (!window.location.origin) {
+                  window.location.origin = "https://localhost:8999/";
+              }
+              $.ajaxSetup({ cache: false });		
+              $.ajax({dataType: "json", url:MD_CONFIG_PRODUCT_RELEASE_URL, xhrFields: {/*withCredentials: true*/}, cache:false, beforeSend: function (xhr) { xhr.setRequestHeader ('Content-Type', 'text/plain'); }, success:function(result){   
+			  	   var prodRelDataArray = [];
+				   if(result != null){
+					   for(var key in result){
+					   		prodRelDataArray.push([result[key].majorRel,result[key].currentRel,result[key].nextRel,result[key].nextRelDate,result[key].comments]);
+					   }
+				   }
+                   renderProductReleaseView(prodRelDataArray);
+                }, error:function(jqXHR, textStatus, errorThrown){ console.log("Error on buildBacklogTrend(): " + errorThrown);} });
+      }
+	  
+	  
+	  function buildCustomerGoLive(){	
+              jQuery.support.cors = true;
+                if (!window.location.origin) {
+                  window.location.origin = "https://localhost:8999/";
+              }
+              $.ajaxSetup({ cache: false });		
+              $.ajax({dataType: "json", url:MD_CONFIG_CUSTOMER_GO_LIVE_URL, xhrFields: {/*withCredentials: true*/}, cache:false, beforeSend: function (xhr) { xhr.setRequestHeader ('Content-Type', 'text/plain'); }, success:function(result){   	
+			  	   var custGoLiveDataArray = [];
+				   if(result != null){
+					   for(var key in result){
+					   		custGoLiveDataArray.push([result[key].customer,result[key].location, result[key].prodVersion,result[key].goLiveDate,result[key].devAngel, result[key].comments]);
+					   }
+				   }		  	   	   		   
+                   renderCustomerGoLiveView(custGoLiveDataArray);
+                }, error:function(jqXHR, textStatus, errorThrown){ console.log("Error on buildBacklogTrend(): " + errorThrown);} });
+      }
+	
+
+    function addBacklogTrendDataChart(result){
+		  var myLineChart =  new dhtmlXChart({
+		  view:"line",
+		  container:"cssWeeklyBacklogTrend",
+		  value:"#devSupportActiveTickets#",
+		  label:"#devSupportActiveTickets#",
+		  item:{
+			  borderColor: "#4aa397",
+			  color: "#4aa397"
+		  },
+		  line:{
+			  color:"#4aa397",
+			  width:3
+		  },
+		  tooltip:{
+			  template:"#devSupportActiveTickets#"
+		  },
+		  offset:0,
+		  xAxis:{
+			  title: MD_CONFIG_WKLY_BKLOG_CHART_X_LABEL,
+			  template:"#week#",
+			  layout:"y"
+		  },
+		  yAxis:{
+			  start:0,
+			  step:MD_CONFIG_WKLY_BKLOG_CHART_STEP_VALUE,
+			  end:MD_CONFIG_WKLY_BKLOG_CHART_MAX_VALUE,
+//					title:"Tickets",
+			  template:function(value){
+				  return value%5?"":value
+			  }
+		  },
+		  padding:{
+			  left:35,
+			  bottom: 50
+		  },
+		  origin:0,
+		  legend:{
+			  layout:"x",
+			  width: 600,
+			  align:"center",
+			  valign:"top",
+			  values:[
+				  {text:"Dev. Support Active Tickets",color:"#4aa397"},
+				  {text:"Dev. Support All Tickets",color:"#de619c"},
+				  {text:"Product Support All Tickets",color:"#69ba00"},
+				  {text:"Total Tickets",color:"#ec5800"}
+			  ],
+			  margin: 10					
+		  }
+	  });
+	  myLineChart.addSeries({
+		  value:"#devSupportAllTickets#",
+		  label:"#devSupportAllTickets#",
+		  item:{
+			  borderColor: "#de619c",
+			  color: "#de619c"
+		  },
+		  line:{
+			  color:"#de619c",
+			  width:3
+		  },
+		  tooltip:{
+			  template:"#devSupportAllTickets#"
+		  }
+	  });
+	  myLineChart.addSeries({
+		  value:"#productSupportAllTickets#",
+		  label:"#productSupportAllTickets#",
+		  item:{
+			  borderColor: "#69ba00",
+			  color: "#69ba00"
+		  },
+		  line:{
+			  color:"#69ba00",
+			  width:3
+		  },
+		  tooltip:{
+			  template:"#productSupportAllTickets#"
+		  }
+	  });
+	  myLineChart.addSeries({
+		  value:"#totalTickets#",
+		  label:"#totalTickets#",
+		  item:{
+			  borderColor: "#ec5800",
+			  color: "#ec5800"
+		  },
+		  line:{
+			  color:"#ec5800",
+			  width:3
+		  },
+		  tooltip:{
+			  template:"#totalTickets#"
+		  }
+	  });
+	  myLineChart.parse(result,"json");			
+  }
+
+	  function addWeeklyIncomingMessagesTrendChart(result){
+		  var barChart1 = new dhtmlXChart({
+				  view: "bar",
+				  container: "weeklyIncomingMessages",
+				  value: "#ticketsCnt#",
+				  color: "#00bfff",
+				  gradient: "rising",
+				  tooltip: {
+					  template: "#ticketsCnt#"
+				  },
+				  width: 30,
+				  tooltip: {
+					  template: "#ticketsCnt#"
+				  },
+				  xAxis: {
+					  title: MD_CONFIG_WKLY_INC_MSG_CHART_X_LABEL,
+					  template: "#week#"
+				  },
+				  yAxis: {
+					  title: MD_CONFIG_WKLY_INC_MSG_CHART_Y_LABEL,
+					  start: 0,
+					  step: MD_CONFIG_WKLY_INC_MSG_CHART_STEP_VALUE,
+					  end: MD_CONFIG_WKLY_INC_MSG_CHART_MAX_VALUE
+				  },
+				  label:"#ticketsCnt#"					
+		  });
+
+		  barChart1.parse(result, "json");
+	  }
+
+	  function addWeeklyMptTrendChart(result){
+			  var myLineChart =  new dhtmlXChart({
+			  view:"line",
+			  fill:"#66cc00",
+			  container:"weeklyMptTrend",
+			  value:"#mpt#%",
+			  label:"#mpt#%",			 				
+			  item:{
+				  borderColor: "#ff35f6",
+				  color: "#ff35f6"
+			  },
+			  line:{
+				  color:"#ff35f6",
+				  width:3
+			  },
+			  tooltip:{
+				  template:"#mpt#%"
+			  },
+			  offset:0,
+			  xAxis:{
+				  title: MD_CONFIG_WKLY_MPT_CHART_X_LABEL,
+				  template:"#week#"
+			  },
+			  yAxis:{
+				  start:0,
+				  step:MD_CONFIG_WKLY_MPT_CHART_STEP_VALUE,
+				  end:MD_CONFIG_WKLY_MPT_CHART_MAX_VALUE,
+				  title:MD_CONFIG_WKLY_MPT_CHART_Y_LABEL,
+				  template:function(value){
+					  return value%5?"":value
+				  }
+			  },
+			  padding:{
+				  left:35,
+				  bottom: 50
+			  },
+			  origin:0,
+			  legend:{
+				  layout:"x",
+				  width: 500,
+				  align:"center",
+				  valign:"top",
+				  values:[
+					  {text:"% of Tickets",color:"#ff35f6"}
+				  ],
+				  margin: 10					
+			  }
+		  });		  
+		  myLineChart.parse(result,"json");			
+	  }
+	  
+	  function renderProductReleaseView(result){
+	  		var mygrid = new dhtmlXGridObject('productReleaseView');	
+			mygrid.setImagePath("dhtmlx/codebase/imgs/");
+			mygrid.setHeader("Major Rel, Current Rel., Next Rel., Rel. Date, Comments", null, ["font-weight:bold;text-align:left;","font-weight:bold;text-align:left;","font-weight:bold;text-align:left;","font-weight:bold;text-align:left;"]);					
+			mygrid.setInitWidths(""+gridWidth*.15+","+gridWidth*.15+","+gridWidth*.15+","+gridWidth*.25+",*");
+			mygrid.setColAlign("left,left,left,left,left");
+			mygrid.setColTypes("ro,ro,ro,ro,ro");
+			mygrid.setColSorting("str,str,str,date,str");
+			//mygrid.setDateFormat("%m/%d/%Y"); 
+			mygrid.enableAutoWidth(true);
+			mygrid.enableAutoHeight(false);
+			mygrid.enableMultiline(true);
+			mygrid.init();
+			//mygrid.setSkin("sb_dark");//dhx_skyblue  (xp, mt, gray, light, clear, modern, sb_dark)
+			mygrid._setAutoResize();
+			//mygrid.enableAlterCss("even","uneven");	
+			mygrid.setStyle("padding:3px;font-weight:bold;font-size:1.0em", "font-size:0.9em;font-weight:bold;background-color:yellowsand;","", "");
+			//mygrid.objBox.style.overflowY = "hidden";
+			mygrid.parse(result,"jsarray");
+	  }
+	  
+	  function renderCustomerGoLiveView(result){
+	  		var mygrid = new dhtmlXGridObject('customerGoLiveView');	
+			mygrid.setImagePath("dhtmlx/codebase/imgs/");
+			mygrid.setHeader("Customer, Location, Prod. Ver., Go-Live Date, Dev. Angel, Comments", null, ["font-weight:bold;text-align:left;","font-weight:bold;text-align:left;","font-weight:bold;text-align:left;","font-weight:bold;text-align:left;","font-weight:bold;text-align:left;","font-weight:bold;text-align:left;"]);					
+			mygrid.setInitWidths(""+productReleaseViewWidth*.1+","+productReleaseViewWidth*.1+","+productReleaseViewWidth*.1+","+productReleaseViewWidth*.1+","+productReleaseViewWidth*.1+",*");
+			mygrid.setColAlign("left,left,left,left,left,left");
+			mygrid.setColTypes("ro,ro,ro,ro,ro,ro");
+			mygrid.setColSorting("str,str,str,date,str,str");
+			mygrid.enableAutoWidth(true);
+			mygrid.enableMultiline(true);
+			//mygrid.setDateFormat("%m/%d/%Y"); 
+			mygrid.enableAutoHeight(false);							
+			mygrid.init();
+			//mygrid.setSkin("sb_dark");//dhx_skyblue  (xp, mt, gray, light, clear, modern, sb_dark)
+			mygrid._setAutoResize();
+			//mygrid.enableAlterCss("even","uneven");	
+			mygrid.setStyle("padding:3px;font-weight:bold;font-size:1.0em", "font-size:0.9em;font-weight:bold;background-color:yellowsand;","", "");
+			//mygrid.objBox.style.overflowY = "hidden";
+			mygrid.parse(result,"jsarray");
+	  }
+	  
+	  
+	  function logCurrentWeekCount(metrics){
+		  var currentDate =  new Date();
+		  var currentDay = currentDate.getDay();
+		  var currentYear = currentDate.getFullYear();
+		  var currentWeek = currentDate.getWeekNumber();
+		  var localStorageKey = getLocalStorageKeyForCurrentWeek(metrics);
+		  var currentValueFromLocalStorage = localStorage.getItem(localStorageKey);
+		  
+		  var currentWeekCount = (currentWeekTickets.pri1+currentWeekTickets.pri2+currentWeekTickets.pri3+currentWeekTickets.pri4);
+		  var devSupportActiveCount = (cleanedUpTickets.pri1+cleanedUpTickets.pri2+cleanedUpTickets.pri3+cleanedUpTickets.pri4);
+		  var devSupportAllCount = (allTickets.pri1+allTickets.pri2+allTickets.pri3+allTickets.pri4);
+		  var productSupportCount = (supportTeamTickets.pri1+supportTeamTickets.pri2+supportTeamTickets.pri3+supportTeamTickets.pri4);
+		  var totalCount = (totalTickets.pri1+totalTickets.pri2+totalTickets.pri3+totalTickets.pri4);
+		  
+		  
+		  var currentWeekMessages = "{\"id\": 200,\"week\":"+ currentWeek + ",\"ticketCnt\": "+currentWeekCount+",\"logType\" : \"I\",\"year\":"+currentYear+"}";
+		  var devSupportActiveMessages = "{\"id\": 200,\"week\":"+ currentWeek + ",\"ticketCnt\": "+devSupportActiveCount+",\"logType\" : \"A\",\"year\":"+currentYear+"}";
+		  var devSupportAllMessages = "{\"id\": 200,\"week\":"+ currentWeek + ",\"ticketCnt\": "+devSupportAllCount+",\"logType\" : \"D\",\"year\":"+currentYear+"}";
+		  var productSupportAllMessages = "{\"id\": 200,\"week\":"+ currentWeek + ",\"ticketCnt\": "+productSupportCount+",\"logType\" : \"P\",\"year\":"+currentYear+"}";
+		  var mptPayload = "{\"id\":200,\"mpt\":"+metrics.mptPercentage+",\"week\":"+currentWeek+",\"year\":"+currentYear+"}";
+		  var totalTicketsMessage = "{\"id\": 200,\"week\":"+ currentWeek + ",\"ticketCnt\": "+totalCount+",\"logType\" : \"T\",\"year\":"+currentYear+"}";
+		  
+		  
+		  if(metrics.name=="mptMetrics") {
+				console.log("mptPayload="+mptPayload);
+		  }
+		  
+		  if(metrics.name=="totalTickets") {
+				console.log("totalTicketsMessage="+totalTicketsMessage);
+		  }
+		  
+		  console.log("From local storage for the Key '"+localStorageKey+"': "+currentValueFromLocalStorage);
+		  localStorage.setItem("currentWeekMessages_"+currentWeek+"_"+currentYear, currentWeekMessages);
+		  localStorage.setItem("devSupportActiveMessages_"+currentWeek+"_"+currentYear, devSupportActiveMessages);
+		  localStorage.setItem("devSupportAllMessages_"+currentWeek+"_"+currentYear, devSupportAllMessages);
+		  localStorage.setItem("productSupportAllMessages_"+currentWeek+"_"+currentYear, productSupportAllMessages);
+		  localStorage.setItem("totalTicketsMessage"+currentWeek+"_"+currentYear, totalTicketsMessage);		  
+		  localStorage.setItem("mptPayload_"+currentWeek+"_"+currentYear, mptPayload);
+		  
+		  //console.log(metrics.name + ":" + ((metrics.name == "mptMetrics") ? POST_WEEKLY_MPT : POST_WEEKLY_DATA_URL));
+		  
+		  if(currentDay == 0 && !currentValueFromLocalStorage){ //Only on Sunday and it is not submitted successfully.
+			  jQuery.support.cors = true;
+			  if (!window.location.origin) {
+				  window.location.origin = "https://localhost:8999/";
+			  }				  
+			  var ticketCountToReport;
+			  
+			  var urlStr = (metrics.name == "mptMetrics") ? POST_WEEKLY_MPT : POST_WEEKLY_DATA_URL;
+			  
+			  var data;
+			  if(metrics.name=="allTickets") { 
+				data = devSupportAllMessages;
+				ticketCountToReport = devSupportAllCount;
+			  } else if(metrics.name=="cleanedUpTickets"){
+				data = devSupportActiveMessages;
+				ticketCountToReport = devSupportActiveCount
+			  } else if(metrics.name=="supportTeamTickets"){
+				 data = productSupportAllMessages;
+				 ticketCountToReport = productSupportCount;
+			  } else if(metrics.name=="currentWeekTickets"){
+				 data = currentWeekMessages;
+				 ticketCountToReport = currentWeekCount;	
+			  } else if(metrics.name=="totalTickets"){
+				 data = totalTicketsMessage;
+				 ticketCountToReport = totalCount;	
+			  } else if(metrics.name=="mptMetrics"){
+				 data = mptPayload;
+				 ticketCountToReport = metrics.mptPercentage;
+			  }
+			  
+			  console.log(metrics.name+ ": "+data);	
+			  $.ajaxSetup({ cache: false });		
+			  $.ajax({dataType: "json", url:urlStr, xhrFields: {/*withCredentials: true*/}, 
+		  data: data,
+		  cache:false, type :'POST', beforeSend: function (xhr) { xhr.setRequestHeader ('Content-Type', 'application/json');}, success:function(result){
+				console.log("Success  on " + metrics.name);
+				localStorage.setItem(localStorageKey, ticketCountToReport);
+			  }, error:function(jqXHR, textStatus, errorThrown){ console.log(errorThrown);} });
+							  
+		  }
+		}
+
+      function getLocalStorageKeyForCurrentWeek(metrics){
+		  var currentDate =  new Date();
+		  var currentDay = currentDate.getDay();
+		  var currentYear = currentDate.getFullYear();
+		  var currentWeek = currentDate.getWeekNumber();
+		  return metrics.name+"_"+currentWeek+"_"+currentYear;
+	  }
+	  
+	  function getLocalStorageKeyForLastWeek(metrics){
+		  var currentDate =  new Date();
+		  var currentDay = currentDate.getDay();
+		  var currentYear = currentDate.getFullYear();
+		  var currentWeek = currentDate.getWeekNumber();
+		  return metrics.name+"_"+(currentWeek-1)+"_"+currentYear;
+	  }
+	  
+	  Date.prototype.getWeekNumber = function(){
+              var d = new Date(+this);
+              d.setHours(0,0,0,0);
+              d.setDate(d.getDate()+4-(d.getDay()||7));
+              return Math.ceil((((d-new Date(d.getFullYear(),0,1))/8.64e7)+1)/7);
+        };
+
+        function getWeekStartAndEndDatesForGivenDate(dateObj){
+              var startDate = dateObj.getDate() - dateObj.getDay(); // First day is the day of the month - the day of the week
+              var endDate = startDate + 6; // last day is the first day + 6
+              var start = new Date(dateObj.setDate(startDate)).toUTCString();
+              var end = new Date(dateObj.setDate(endDate)).toUTCString();
+              return [start, end];
+        }
+
+        function getWeekStartAndDatesForGivenWeek(week, year){	  		
+               var d = new Date("Jan 01, "+year+" 00:00:01");
+               var w = d.getTime() + 604800000 * (week-1);
+               return [new Date(w).toUTCString(), new Date(w+604798000).toUTCString()];
+        }
+
+        function parseDate(dateStr, isUTCDate){
+              var year = dateStr.substring(0,4);
+              var month = dateStr.substring(4,6)-1;
+              var date = dateStr.substring(6,8);
+              var hour = dateStr.substring(8,10);
+              var minute = dateStr.substring(10,12);
+              var sec = dateStr.substring(12,14);
+              if(isUTCDate){
+                  return new Date(Date.UTC(year, month, date, hour, minute, sec));
+              }
+              else{
+                  return new Date(year, month, date, hour, minute, sec);
+              }			
+        }         
+        var week = new Date().getWeekNumber();
+        var startAndEnd = getWeekStartAndEndDatesForGivenDate(new Date());
+        var startAndEnd1 = getWeekStartAndDatesForGivenWeek(new Date().getWeekNumber(), new Date().getFullYear());
+        //console.log(week);
+        //console.log(startAndEnd);
+        //console.log(startAndEnd1);
+        //console.log(parseDate('20160915212317', true));
+		//console.log(new Date().getDay());
+
+	</script>
+	<title>SAP ME Maintenance Metrics View</title>
+	</head>
+				<body marginwidth="0" marginheight="0"><div class="dhx_tooltip"></div><div class="dhx_tooltip"></div><div class="dhx_tooltip"></div><div class="dhx_tooltip"></div><div class="dhx_tooltip"></div><div class="dhx_tooltip"></div>
+					<table id="md_metrics_view" align="center" class="metricView">
+						<tbody><tr width="100%">
+							<td class="tablewidth viewPadding">
+								<table class="tableborder" cellpadding="10" style="cursor:pointer" width="100%" id="devSupportAllCont">
+									<tbody><tr>
+										<td colspan="4">
+											<table border="0" width="100%">
+												<tbody><tr>
+													<th colspan="4" class="metricsHeader header">Development Support Active | All Tickets</th>         
+												</tr>
+												<tr>
+													<td style="white-space:nowrap;">
+                                                    	<table width="100%">
+                                                        	<tbody><tr valign="top">
+                                                                <td>
+                                                                    <div class="metricTotal"><span id="cleanedUpTickets_total">X</span> | <span id="allTickets_total">X</span></div>
+                                                                    <div>
+                                                                    <div class="metric_sp" align="center">Solution Provided: <span id="cleanedUpTickets_sp">0</span> | <span id="allTickets_sp">0</span></div> 
+                                                                </div></td>
+                                                            </tr>
+                                                         </tbody></table>   
+                                                    </td> 
+													<td><div></div></td>
+													<td align="center">
+
+														<table width="100%">
+															<tbody><tr valign="top">
+																<td>
+																	<div class="metricDetailLabel">UnAssigned</div>
+																	<div id="allTickets_ua" class="metricsDetail circleOnText">0</div>
+																</td>
+																<td>                        	
+																	<div class="metricDetailLabel">New</div>                            
+																	<div id="allTickets_ne" class="metricsDetail">0</div>
+																</td>
+																<td>
+																	<div class="metricDetailLabel">In Process</div>
+																	<div id="allTickets_ip" class="metricsDetail">0</div>
+																</td>            
+															</tr>
+															<tr><td colspan="3"></td></tr>
+															<tr><td colspan="3"></td></tr>
+															<tr><td colspan="3"></td></tr>
+															<tr><td colspan="3"></td></tr>
+
+															<tr>
+																<td>
+																	<div class="metricDetailLabel">Pending Release</div>
+																	<div class="metricsDetail"><span id="cleanedUpTickets_pr">0</span> | <span id="allTickets_pr">0</span></div>
+																</td>
+																<td>
+																	<div class="metricDetailLabel">Customer Action</div>
+																	<div class="metricsDetail"><span id="cleanedUpTickets_ca">0</span> | <span id="allTickets_ca">0</span></div>
+																</td>
+																<td>
+																	<div class="metricDetailLabel">On Hold</div>
+																	<div id="allTickets_oh" class="metricsDetail">0</div>
+																</td>            
+															</tr>
+														</tbody></table>   
+													</td>
+												</tr>
+											</tbody></table>
+										</td>    	
+									</tr>
+                                    <tr>
+                                    	<td>
+                                            <table class="ticketsPrBorder" width="100%">
+                                                <tbody><tr class="metricsPriorityLabel">	
+                                                    <th width="25%">Very High </th>
+                                                    <th width="25%">High</th>
+                                                    <th width="25%">Medium</th>
+                                                    <th width="25%">Low</th>
+                                                </tr>
+                                                <tr align="center">     
+                                                    <td class="metricsPriority1"><span id="cleanedUpTickets_pri1">ERR</span> | <span id="allTickets_pri1">ERR</span></td>
+                                                    <td class="metricsPriority2"><span id="cleanedUpTickets_pri2">ERR</span> | <span id="allTickets_pri2">ERR</span></td>
+                                                    <td class="metricsPriority3"><span id="cleanedUpTickets_pri3">ERR</span> | <span id="allTickets_pri3">ERR</span></td>
+                                                    <td class="metricsPriority4"><span id="cleanedUpTickets_pri4">ERR</span> | <span id="allTickets_pri4">ERR</span></td>
+                                                </tr>
+                                            </tbody></table>
+                                        </td>
+                                    </tr>    
+								</tbody></table>
+							</td>
+							
+							<td class="tablewidth viewPadding">
+								<table class="tableborder" cellpadding="10" style="cursor:pointer" width="100%">
+									<tbody><tr>
+										<td colspan="4">
+											<table border="0" width="100%">
+												<tbody><tr>
+													<th colspan="3" class="header metricsHeader">Product Support All Tickets</th>            
+												</tr>
+												<tr>
+													<td style="white-space:nowrap;">
+                                                    	<table width="100%">
+                                                        	<tbody><tr valign="top">
+                                                                <td>
+                                                                    <div class="metricTotal" id="supportTeamTickets_total">X</div>
+                                                                    <div>
+                                                                    <div class="metric_sp" align="center">Solution Provided: <span id="supportTeamTickets_sp">0</span></div> 
+                                                                </div></td>
+                                                            </tr>
+                                                         </tbody></table>   
+                                                    </td>
+													<td><div></div></td>
+													<td align="center">
+
+														<table width="100%">
+															<tbody><tr valign="top">
+																<td>
+																	<div class="metricDetailLabel">UnAssigned</div>
+																	<div id="supportTeamTickets_ua" class="metricsDetail circleOnText">0</div>
+																</td>
+																<td>
+																	<div class="metricDetailLabel">New</div>
+																	<div id="supportTeamTickets_ne" class="metricsDetail">0</div>
+																</td>
+																<td>
+																	<div class="metricDetailLabel">In Process</div>
+																	<div id="supportTeamTickets_ip" class="metricsDetail">0</div>
+																</td>            
+															</tr>
+															<tr><td colspan="3"></td></tr>
+															<tr><td colspan="3"></td></tr>
+															<tr><td colspan="3"></td></tr>
+															<tr><td colspan="3"></td></tr>
+
+															<tr>
+																<td>
+																	<div class="metricDetailLabel">Pending Release</div>
+																	<div id="supportTeamTickets_pr" class="metricsDetail">0</div>
+																</td>
+																<td>
+																	<div class="metricDetailLabel">Customer Action</div>
+																	<div id="supportTeamTickets_ca" class="metricsDetail">0</div>
+																</td>
+																<td>
+																	<div class="metricDetailLabel">On Hold</div>
+																	<div id="supportTeamTickets_oh" class="metricsDetail">0</div>
+																</td>            
+															</tr>
+														</tbody></table>   
+													</td>
+												</tr>
+											</tbody></table>
+										</td>    	
+									</tr>
+                                    <tr>
+                                    	<td>
+                                            <table class="ticketsPrBorder" width="100%">
+                                                <tbody><tr class="metricsPriorityLabel">	
+                                                    <th width="25%">Very High </th>
+                                                    <th width="25%">High</th>
+                                                    <th width="25%">Medium</th>
+                                                    <th width="25%">Low</th>
+                                                </tr>
+                                                <tr align="center">     
+                                                    <td id="supportTeamTickets_pri1" class="metricsPriority1">ERR</td>
+                                                    <td id="supportTeamTickets_pri2" class="metricsPriority2">ERR</td>
+                                                    <td id="supportTeamTickets_pri3" class="metricsPriority3">ERR</td>
+                                                    <td id="supportTeamTickets_pri4" class="metricsPriority4">ERR</td>
+                                                </tr>
+                                             </tbody></table>
+                                         </td>
+                                     </tr>           
+								</tbody></table>
+							</td>
+                            <td class="tablewidth viewPadding">
+								<table class="tableborder" cellpadding="10" style="cursor:pointer" width="100%">
+									<tbody><tr>
+										<td colspan="4">
+											<table border="0" width="100%">
+												<tbody><tr>
+													<th colspan="3" class="metricsHeader header">Current Week Tickets</th>            
+												</tr>
+												<tr>
+													<td style="white-space:nowrap;">
+                                                    	<table width="100%">
+                                                        	<tbody><tr valign="top">
+                                                                <td>
+                                                                    <div class="metricTotal" id="currentWeekTickets_total">X</div>
+                                                                    <div>
+                                                                    <div class="metric_sp" align="center">Solution Provided: <span id="currentWeekTickets_sp">0</span></div>                                                                    <div class="metric_sp" align="center">DS Developement: <span id="currentWeekTickets_org_DSDev">0</span></div>
+                                                                </div></td>
+                                                            </tr>
+                                                         </tbody></table>   
+                                                    </td>
+													<td><div></div></td>
+													<td align="center">
+
+														<table width="100%">
+															<tbody><tr valign="top">
+																<td>
+																	<div class="metricDetailLabel">UnAssigned</div>
+																	<div id="currentWeekTickets_ua" class="metricsDetail circleOnText">0</div>
+																</td>
+																<td>                        	
+																	<div class="metricDetailLabel">New</div>                            
+																	<div id="currentWeekTickets_ne" class="metricsDetail">0</div>
+																</td>
+																<td>
+																	<div class="metricDetailLabel">In Process</div>
+																	<div id="currentWeekTickets_ip" class="metricsDetail">0</div>
+																</td>            
+															</tr>
+															<tr><td colspan="3"></td></tr>
+															<tr><td colspan="3"></td></tr>
+															<tr><td colspan="3"></td></tr>
+															<tr><td colspan="3"></td></tr>
+
+															<tr>
+																<td>
+																	<div class="metricDetailLabel">Pending Release</div>
+																	<div id="currentWeekTickets_pr" class="metricsDetail">0</div>
+																</td>
+																<td>
+																	<div class="metricDetailLabel">Customer Action</div>
+																	<div id="currentWeekTickets_ca" class="metricsDetail">0</div>
+																</td>
+																<td>
+																	<div class="metricDetailLabel">On Hold</div>
+																	<div id="currentWeekTickets_oh" class="metricsDetail">0</div>
+																</td>            
+															</tr>
+														</tbody></table>   
+													</td>
+												</tr>
+											</tbody></table>
+										</td>    	
+									</tr>
+                                    <tr>
+                                    	<td>
+                                            <table class="ticketsPrBorder" width="100%">
+                                                <tbody><tr class="metricsPriorityLabel">	
+                                                    <th width="25%">Very High </th>
+                                                    <th width="25%">High</th>
+                                                    <th width="25%">Medium</th>
+                                                    <th width="25%">Low</th>
+                                                </tr>
+                                                <tr align="center">     
+                                                    <td id="currentWeekTickets_pri1" class="metricsPriority1">ERR</td>
+                                                    <td id="currentWeekTickets_pri2" class="metricsPriority2">ERR</td>
+                                                    <td id="currentWeekTickets_pri3" class="metricsPriority3">ERR</td>
+                                                    <td id="currentWeekTickets_pri4" class="metricsPriority4">ERR</td>
+                                                </tr>
+                                            </tbody></table>
+                                        </td>
+                                    </tr>            
+								</tbody></table>
+							</td>
+						</tr>
+						<tr>
+							<td class="tablewidth viewPadding">
+								<table width="100%" class="tableborder">
+									<tbody><tr>
+										<td id="userCountContainer">
+											<div align="center" class="metricsHeader header">Tickets by Processor</div>
+											<center>
+												<div id="userTicketsCountView" style="vertical-align: top; height: 230.35px;" align="center"></div>    
+                                            </center>
+										</td>
+									</tr>
+								</tbody></table>
+							</td>
+							<td class="tablewidth viewPadding">
+								<table width="100%" class="tableborder">
+									<tbody><tr>
+										<td id="customerCountContainer">
+											<div align="center" class="metricsHeader header" id="css_title">Tickets by Customer</div>
+											<center>
+												<div id="customerTicketsCountView" style="vertical-align: top; height: 230.35px;" align="center"></div>    
+                                            </center>
+										</td>
+									</tr>
+								</tbody></table>
+							</td>
+                            <td>
+                                <table width="100%" id="clockView">
+                                        <tbody><tr>
+                                                <td width="50%" class="viewPadding" style="vertical-align:middle"> 
+                                                    <div>
+                                                        <table width="100%" class="tableborder">
+                                                            <tbody><tr class="header">
+                                                                <th width="100%"><div id="atlTime">US/Eastern Time</div><div style="font-size:xx-small" id="team_vel_header"></div></th>
+                                                            </tr>
+                                                            <tr>
+                                                                <td align="center" style="background-color:#000; vertical-align:middle"><iframe src="./clock.html" class="chart"></iframe></td>
+                                                             </tr>		
+                                                         </tbody></table>	
+                                                     </div>	
+                                                </td>
+                                                <td width="50%" class="viewPadding" style="vertical-align:middle"> 
+                                                    <div>
+                                                        <table width="100%" class="tableborder">
+                                                            <tbody><tr class="header">
+                                                                <th width="100%"><div id="atlTime">Europe/Kiev Time</div><div style="font-size:xx-small" id="team_vel_header"></div></th>
+                                                            </tr>
+                                                            <tr>
+                                                                <td align="center" style="background-color:#000; vertical-align:middle"><iframe src="./clock(1).html" class="chart"></iframe></td>
+                                                             </tr>		
+                                                         </tbody></table>	
+                                                     </div>	
+                                                </td>
+                                        </tr>
+                                </tbody></table>                                          	
+                          </td>							  
+						</tr>
+						<tr align="center" width="100%">  
+							<td colspan="3">
+								<table width="100%">
+									<tbody><tr>
+                                    	<td width="20%" class="viewPadding">
+                                        	
+                                            
+                                            <div>
+												<table width="100%" class="tableborder">
+													<tbody><tr class="header">
+														<th width="100%"><div id="weeklyIncoming">Total Tickets by Status</div><div style="font-size:xx-small" id="team_vel_header"></div></th>
+													</tr>
+													<tr>
+														<td align="center"><div id="totalTickets_chartByStatus" class="chart"></div></td>                                                       
+													</tr>		
+												</tbody></table>	
+											</div>
+                                            
+										</td>
+										<td width="40%" class="viewPadding"> 
+											<div>
+												<table width="100%" class="tableborder">
+													<tbody><tr class="header">
+														<th width="100%"><div id="cssBacklog">Weekly CSS Backlog Trend</div><div style="font-size:xx-small" id="team_vel_header"></div></th>
+													</tr>
+													<tr>
+														<td align="center"><div id="cssWeeklyBacklogTrend" class="chart dhx_chart"><canvas width="729" height="256.5" canvas_id="legend" style="width: 648px; height: 228px;"></canvas><div class="dhx_chart_legend" style="left: 1.5px; top: 10px; padding: 3px;"><div style="float: left; padding-left: 25px;" class="dhx_chart_legend_item" series_id="0">Dev. Support Active Tickets</div><div style="float: left; padding-left: 25px;" class="dhx_chart_legend_item" series_id="1">Dev. Support All Tickets</div><div style="float: left; padding-left: 25px;" class="dhx_chart_legend_item" series_id="2">Product Support All Tickets</div><div style="float: left; padding-left: 25px;" class="dhx_chart_legend_item" series_id="3">Total Tickets</div></div><canvas width="729" height="256.5" canvas_id="0" style="z-index: 2; width: 648px; height: 228px;"></canvas><canvas width="729" height="256.5" canvas_id="axis_y" style="width: 648px; height: 228px;"></canvas><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 173.5px; width: 30px;">0</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 155.5px; width: 30px;">50</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 137.5px; width: 30px;">100</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 119.5px; width: 30px;">150</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 101.5px; width: 30px;">200</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 83.5px; width: 30px;">250</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 65.5px; width: 30px;">300</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 48.5px; width: 30px;">350</div><canvas width="729" height="256.5" canvas_id="axis_x" style="width: 648px; height: 228px;"></canvas><div class="dhx_canvas_text dhx_axis_item_x" style="left: 34.5px; top: 178.5px;">1</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 58px; top: 178.5px;">2</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 86px; top: 178.5px;">3</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 116px; top: 178.5px;">4</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 143px; top: 178.5px;">5</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 172px; top: 178.5px;">6</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 199px; top: 178.5px;">7</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 228px; top: 178.5px;">8</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 256px; top: 178.5px;">9</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 281px; top: 178.5px;">10</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 308px; top: 178.5px;">11</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 337px; top: 178.5px;">12</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 365px; top: 178.5px;">13</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 393px; top: 178.5px;">14</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 421px; top: 178.5px;">15</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 450px; top: 178.5px;">16</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 478px; top: 178.5px;">17</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 506px; top: 178.5px;">18</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 534px; top: 178.5px;">19</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 563px; top: 178.5px;">20</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 592px; top: 178.5px;">21</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 619px; top: 178.5px;">22</div><div class="dhx_canvas_text dhx_axis_title_x" style="left: 34.5px; top: 208px; width: 593px;">Week</div><div class="dhx_canvas_text" style="left: 27px; top: 127.857px;">76</div><div class="dhx_canvas_text" style="left: 55px; top: 128.929px;">73</div><div class="dhx_canvas_text" style="left: 82px; top: 128.214px;">75</div><div class="dhx_canvas_text" style="left: 111px; top: 128.214px;">75</div><div class="dhx_canvas_text" style="left: 139px; top: 127.857px;">76</div><div class="dhx_canvas_text" style="left: 168px; top: 126.071px;">81</div><div class="dhx_canvas_text" style="left: 196px; top: 121.429px;">94</div><div class="dhx_canvas_text" style="left: 224px; top: 119.643px;">99</div><div class="dhx_canvas_text" style="left: 252px; top: 119.643px;">99</div><div class="dhx_canvas_text" style="left: 280px; top: 119.643px;">99</div><div class="dhx_canvas_text" style="left: 305px; top: 117.5px;">105</div><div class="dhx_canvas_text" style="left: 333px; top: 112.5px;">119</div><div class="dhx_canvas_text" style="left: 361px; top: 109.643px;">127</div><div class="dhx_canvas_text" style="left: 390px; top: 113.929px;">115</div><div class="dhx_canvas_text" style="left: 422px; top: 121.071px;">95</div><div class="dhx_canvas_text" style="left: 450px; top: 122.5px;">91</div><div class="dhx_canvas_text" style="left: 478px; top: 127.143px;">78</div><div class="dhx_canvas_text" style="left: 506px; top: 127.143px;">78</div><div class="dhx_canvas_text" style="left: 535px; top: 128.571px;">74</div><div class="dhx_canvas_text" style="left: 563px; top: 125.714px;">82</div><div class="dhx_canvas_text" style="left: 591px; top: 131.071px;">67</div><div class="dhx_canvas_text" style="left: 619px; top: 132.857px;">62</div><canvas width="729" height="256.5" canvas_id="1" style="z-index: 3; width: 648px; height: 228px;"></canvas><div class="dhx_canvas_text" style="left: 27px; top: 120.714px;">96</div><div class="dhx_canvas_text" style="left: 55px; top: 123.571px;">88</div><div class="dhx_canvas_text" style="left: 82px; top: 122.5px;">91</div><div class="dhx_canvas_text" style="left: 111px; top: 123.571px;">88</div><div class="dhx_canvas_text" style="left: 139px; top: 122.857px;">90</div><div class="dhx_canvas_text" style="left: 168px; top: 120px;">98</div><div class="dhx_canvas_text" style="left: 192px; top: 117.143px;">106</div><div class="dhx_canvas_text" style="left: 220px; top: 114.643px;">113</div><div class="dhx_canvas_text" style="left: 248px; top: 114.643px;">113</div><div class="dhx_canvas_text" style="left: 277px; top: 114.643px;">113</div><div class="dhx_canvas_text" style="left: 305px; top: 113.214px;">117</div><div class="dhx_canvas_text" style="left: 333px; top: 105px;">140</div><div class="dhx_canvas_text" style="left: 361px; top: 103.214px;">145</div><div class="dhx_canvas_text" style="left: 390px; top: 106.071px;">137</div><div class="dhx_canvas_text" style="left: 418px; top: 105px;">140</div><div class="dhx_canvas_text" style="left: 446px; top: 109.643px;">127</div><div class="dhx_canvas_text" style="left: 474px; top: 105.357px;">139</div><div class="dhx_canvas_text" style="left: 502px; top: 111.429px;">122</div><div class="dhx_canvas_text" style="left: 531px; top: 115.357px;">111</div><div class="dhx_canvas_text" style="left: 559px; top: 110.357px;">125</div><div class="dhx_canvas_text" style="left: 587px; top: 113.214px;">117</div><div class="dhx_canvas_text" style="left: 615px; top: 98.5714px;">158</div><canvas width="729" height="256.5" canvas_id="2" style="z-index: 4; width: 648px; height: 228px;"></canvas><div class="dhx_canvas_text" style="left: 23px; top: 111.786px;">121</div><div class="dhx_canvas_text" style="left: 51px; top: 109.643px;">127</div><div class="dhx_canvas_text" style="left: 78px; top: 110.357px;">125</div><div class="dhx_canvas_text" style="left: 107px; top: 111.786px;">121</div><div class="dhx_canvas_text" style="left: 135px; top: 111.786px;">121</div><div class="dhx_canvas_text" style="left: 164px; top: 117.143px;">106</div><div class="dhx_canvas_text" style="left: 192px; top: 115.714px;">110</div><div class="dhx_canvas_text" style="left: 220px; top: 107.5px;">133</div><div class="dhx_canvas_text" style="left: 248px; top: 107.5px;">133</div><div class="dhx_canvas_text" style="left: 277px; top: 107.5px;">133</div><div class="dhx_canvas_text" style="left: 305px; top: 106.071px;">137</div><div class="dhx_canvas_text" style="left: 333px; top: 102.5px;">147</div><div class="dhx_canvas_text" style="left: 361px; top: 99.6429px;">155</div><div class="dhx_canvas_text" style="left: 390px; top: 105.357px;">139</div><div class="dhx_canvas_text" style="left: 418px; top: 104.286px;">142</div><div class="dhx_canvas_text" style="left: 446px; top: 99.2857px;">156</div><div class="dhx_canvas_text" style="left: 474px; top: 112.5px;">119</div><div class="dhx_canvas_text" style="left: 502px; top: 107.857px;">132</div><div class="dhx_canvas_text" style="left: 531px; top: 102.143px;">148</div><div class="dhx_canvas_text" style="left: 559px; top: 101.071px;">151</div><div class="dhx_canvas_text" style="left: 587px; top: 97.8571px;">160</div><div class="dhx_canvas_text" style="left: 615px; top: 97.1429px;">162</div><canvas width="729" height="256.5" canvas_id="3" style="z-index: 5; width: 648px; height: 228px;"></canvas><div class="dhx_canvas_text" style="left: 23px; top: 77.5px;">217</div><div class="dhx_canvas_text" style="left: 51px; top: 78.2143px;">215</div><div class="dhx_canvas_text" style="left: 78px; top: 77.8571px;">216</div><div class="dhx_canvas_text" style="left: 107px; top: 80.3571px;">209</div><div class="dhx_canvas_text" style="left: 135px; top: 79.6429px;">211</div><div class="dhx_canvas_text" style="left: 164px; top: 82.1429px;">204</div><div class="dhx_canvas_text" style="left: 192px; top: 77.8571px;">216</div><div class="dhx_canvas_text" style="left: 220px; top: 67.1429px;">246</div><div class="dhx_canvas_text" style="left: 248px; top: 67.1429px;">246</div><div class="dhx_canvas_text" style="left: 277px; top: 67.1429px;">246</div><div class="dhx_canvas_text" style="left: 305px; top: 64.2857px;">254</div><div class="dhx_canvas_text" style="left: 333px; top: 62.5px;">259</div><div class="dhx_canvas_text" style="left: 361px; top: 47.8571px;">300</div><div class="dhx_canvas_text" style="left: 390px; top: 56.4286px;">276</div><div class="dhx_canvas_text" style="left: 418px; top: 54.2857px;">282</div><div class="dhx_canvas_text" style="left: 446px; top: 53.9286px;">283</div><div class="dhx_canvas_text" style="left: 474px; top: 62.8571px;">258</div><div class="dhx_canvas_text" style="left: 502px; top: 64.2857px;">254</div><div class="dhx_canvas_text" style="left: 531px; top: 62.5px;">259</div><div class="dhx_canvas_text" style="left: 559px; top: 56.4286px;">276</div><div class="dhx_canvas_text" style="left: 587px; top: 56.0714px;">277</div><div class="dhx_canvas_text" style="left: 615px; top: 40.3571px;">321</div><div style="position: absolute; width: 593px; height: 125px; top: 53px; left: 35px; z-index: 1000;"><map id="map_1496689955594" name="map_1496689955594"><area dhx_area_id="1496689955572" shape="RECT" coords="-4,93.85714285714286,4,101.85714285714286" userdata="0">
+<area dhx_area_id="1496689955573" shape="RECT" coords="23.73809523809524,94.92857142857142,31.73809523809524,102.92857142857142" userdata="0">
+<area dhx_area_id="1496689955574" shape="RECT" coords="51.97619047619048,94.21428571428572,59.97619047619048,102.21428571428572" userdata="0">
+<area dhx_area_id="1496689955575" shape="RECT" coords="80.21428571428571,94.21428571428572,88.21428571428571,102.21428571428572" userdata="0">
+<area dhx_area_id="1496689955576" shape="RECT" coords="108.45238095238096,93.85714285714286,116.45238095238096,101.85714285714286" userdata="0">
+<area dhx_area_id="1496689955577" shape="RECT" coords="136.69047619047618,92.07142857142856,144.69047619047618,100.07142857142856" userdata="0">
+<area dhx_area_id="1496689955578" shape="RECT" coords="164.92857142857142,87.42857142857144,172.92857142857142,95.42857142857144" userdata="0">
+<area dhx_area_id="1496689955579" shape="RECT" coords="193.16666666666666,85.64285714285714,201.16666666666666,93.64285714285714" userdata="0">
+<area dhx_area_id="1496689955580" shape="RECT" coords="221.40476190476193,85.64285714285714,229.40476190476193,93.64285714285714" userdata="0">
+<area dhx_area_id="1496689955581" shape="RECT" coords="249.6428571428571,85.64285714285714,257.6428571428571,93.64285714285714" userdata="0">
+<area dhx_area_id="1496689955582" shape="RECT" coords="277.88095238095235,83.5,285.88095238095235,91.5" userdata="0">
+<area dhx_area_id="1496689955583" shape="RECT" coords="306.1190476190476,78.5,314.1190476190476,86.5" userdata="0">
+<area dhx_area_id="1496689955584" shape="RECT" coords="334.35714285714283,75.64285714285714,342.35714285714283,83.64285714285714" userdata="0">
+<area dhx_area_id="1496689955585" shape="RECT" coords="362.5952380952381,79.92857142857144,370.5952380952381,87.92857142857144" userdata="0">
+<area dhx_area_id="1496689955586" shape="RECT" coords="390.8333333333333,87.07142857142856,398.8333333333333,95.07142857142856" userdata="0">
+<area dhx_area_id="1496689955587" shape="RECT" coords="419.07142857142856,88.5,427.07142857142856,96.5" userdata="0">
+<area dhx_area_id="1496689955588" shape="RECT" coords="447.3095238095238,93.14285714285714,455.3095238095238,101.14285714285714" userdata="0">
+<area dhx_area_id="1496689955589" shape="RECT" coords="475.54761904761904,93.14285714285714,483.54761904761904,101.14285714285714" userdata="0">
+<area dhx_area_id="1496689955590" shape="RECT" coords="503.7857142857142,94.57142857142856,511.7857142857142,102.57142857142856" userdata="0">
+<area dhx_area_id="1496689955591" shape="RECT" coords="532.0238095238095,91.71428571428572,540.0238095238095,99.71428571428572" userdata="0">
+<area dhx_area_id="1496689955592" shape="RECT" coords="560.2619047619047,97.07142857142856,568.2619047619047,105.07142857142856" userdata="0">
+<area dhx_area_id="1496689955593" shape="RECT" coords="588.5,98.85714285714286,596.5,106.85714285714286" userdata="0">
+<area dhx_area_id="1496689955572" shape="RECT" coords="-4,86.71428571428572,4,94.71428571428572" userdata="1">
+<area dhx_area_id="1496689955573" shape="RECT" coords="23.73809523809524,89.57142857142856,31.73809523809524,97.57142857142856" userdata="1">
+<area dhx_area_id="1496689955574" shape="RECT" coords="51.97619047619048,88.5,59.97619047619048,96.5" userdata="1">
+<area dhx_area_id="1496689955575" shape="RECT" coords="80.21428571428571,89.57142857142856,88.21428571428571,97.57142857142856" userdata="1">
+<area dhx_area_id="1496689955576" shape="RECT" coords="108.45238095238096,88.85714285714286,116.45238095238096,96.85714285714286" userdata="1">
+<area dhx_area_id="1496689955577" shape="RECT" coords="136.69047619047618,86,144.69047619047618,94" userdata="1">
+<area dhx_area_id="1496689955578" shape="RECT" coords="164.92857142857142,83.14285714285714,172.92857142857142,91.14285714285714" userdata="1">
+<area dhx_area_id="1496689955579" shape="RECT" coords="193.16666666666666,80.64285714285714,201.16666666666666,88.64285714285714" userdata="1">
+<area dhx_area_id="1496689955580" shape="RECT" coords="221.40476190476193,80.64285714285714,229.40476190476193,88.64285714285714" userdata="1">
+<area dhx_area_id="1496689955581" shape="RECT" coords="249.6428571428571,80.64285714285714,257.6428571428571,88.64285714285714" userdata="1">
+<area dhx_area_id="1496689955582" shape="RECT" coords="277.88095238095235,79.21428571428572,285.88095238095235,87.21428571428572" userdata="1">
+<area dhx_area_id="1496689955583" shape="RECT" coords="306.1190476190476,71,314.1190476190476,79" userdata="1">
+<area dhx_area_id="1496689955584" shape="RECT" coords="334.35714285714283,69.21428571428572,342.35714285714283,77.21428571428572" userdata="1">
+<area dhx_area_id="1496689955585" shape="RECT" coords="362.5952380952381,72.07142857142856,370.5952380952381,80.07142857142856" userdata="1">
+<area dhx_area_id="1496689955586" shape="RECT" coords="390.8333333333333,71,398.8333333333333,79" userdata="1">
+<area dhx_area_id="1496689955587" shape="RECT" coords="419.07142857142856,75.64285714285714,427.07142857142856,83.64285714285714" userdata="1">
+<area dhx_area_id="1496689955588" shape="RECT" coords="447.3095238095238,71.35714285714286,455.3095238095238,79.35714285714286" userdata="1">
+<area dhx_area_id="1496689955589" shape="RECT" coords="475.54761904761904,77.42857142857144,483.54761904761904,85.42857142857144" userdata="1">
+<area dhx_area_id="1496689955590" shape="RECT" coords="503.7857142857142,81.35714285714286,511.7857142857142,89.35714285714286" userdata="1">
+<area dhx_area_id="1496689955591" shape="RECT" coords="532.0238095238095,76.35714285714286,540.0238095238095,84.35714285714286" userdata="1">
+<area dhx_area_id="1496689955592" shape="RECT" coords="560.2619047619047,79.21428571428572,568.2619047619047,87.21428571428572" userdata="1">
+<area dhx_area_id="1496689955593" shape="RECT" coords="588.5,64.57142857142857,596.5,72.57142857142857" userdata="1">
+<area dhx_area_id="1496689955572" shape="RECT" coords="-4,77.78571428571428,4,85.78571428571428" userdata="2">
+<area dhx_area_id="1496689955573" shape="RECT" coords="23.73809523809524,75.64285714285714,31.73809523809524,83.64285714285714" userdata="2">
+<area dhx_area_id="1496689955574" shape="RECT" coords="51.97619047619048,76.35714285714286,59.97619047619048,84.35714285714286" userdata="2">
+<area dhx_area_id="1496689955575" shape="RECT" coords="80.21428571428571,77.78571428571428,88.21428571428571,85.78571428571428" userdata="2">
+<area dhx_area_id="1496689955576" shape="RECT" coords="108.45238095238096,77.78571428571428,116.45238095238096,85.78571428571428" userdata="2">
+<area dhx_area_id="1496689955577" shape="RECT" coords="136.69047619047618,83.14285714285714,144.69047619047618,91.14285714285714" userdata="2">
+<area dhx_area_id="1496689955578" shape="RECT" coords="164.92857142857142,81.71428571428572,172.92857142857142,89.71428571428572" userdata="2">
+<area dhx_area_id="1496689955579" shape="RECT" coords="193.16666666666666,73.5,201.16666666666666,81.5" userdata="2">
+<area dhx_area_id="1496689955580" shape="RECT" coords="221.40476190476193,73.5,229.40476190476193,81.5" userdata="2">
+<area dhx_area_id="1496689955581" shape="RECT" coords="249.6428571428571,73.5,257.6428571428571,81.5" userdata="2">
+<area dhx_area_id="1496689955582" shape="RECT" coords="277.88095238095235,72.07142857142856,285.88095238095235,80.07142857142856" userdata="2">
+<area dhx_area_id="1496689955583" shape="RECT" coords="306.1190476190476,68.5,314.1190476190476,76.5" userdata="2">
+<area dhx_area_id="1496689955584" shape="RECT" coords="334.35714285714283,65.64285714285714,342.35714285714283,73.64285714285714" userdata="2">
+<area dhx_area_id="1496689955585" shape="RECT" coords="362.5952380952381,71.35714285714286,370.5952380952381,79.35714285714286" userdata="2">
+<area dhx_area_id="1496689955586" shape="RECT" coords="390.8333333333333,70.28571428571428,398.8333333333333,78.28571428571428" userdata="2">
+<area dhx_area_id="1496689955587" shape="RECT" coords="419.07142857142856,65.28571428571428,427.07142857142856,73.28571428571428" userdata="2">
+<area dhx_area_id="1496689955588" shape="RECT" coords="447.3095238095238,78.5,455.3095238095238,86.5" userdata="2">
+<area dhx_area_id="1496689955589" shape="RECT" coords="475.54761904761904,73.85714285714286,483.54761904761904,81.85714285714286" userdata="2">
+<area dhx_area_id="1496689955590" shape="RECT" coords="503.7857142857142,68.14285714285714,511.7857142857142,76.14285714285714" userdata="2">
+<area dhx_area_id="1496689955591" shape="RECT" coords="532.0238095238095,67.07142857142857,540.0238095238095,75.07142857142856" userdata="2">
+<area dhx_area_id="1496689955592" shape="RECT" coords="560.2619047619047,63.85714285714286,568.2619047619047,71.85714285714286" userdata="2">
+<area dhx_area_id="1496689955593" shape="RECT" coords="588.5,63.14285714285714,596.5,71.14285714285714" userdata="2">
+<area dhx_area_id="1496689955572" shape="RECT" coords="-4,43.5,4,51.5" userdata="3">
+<area dhx_area_id="1496689955573" shape="RECT" coords="23.73809523809524,44.21428571428571,31.73809523809524,52.21428571428571" userdata="3">
+<area dhx_area_id="1496689955574" shape="RECT" coords="51.97619047619048,43.85714285714286,59.97619047619048,51.85714285714286" userdata="3">
+<area dhx_area_id="1496689955575" shape="RECT" coords="80.21428571428571,46.35714285714286,88.21428571428571,54.35714285714286" userdata="3">
+<area dhx_area_id="1496689955576" shape="RECT" coords="108.45238095238096,45.64285714285714,116.45238095238096,53.64285714285714" userdata="3">
+<area dhx_area_id="1496689955577" shape="RECT" coords="136.69047619047618,48.14285714285714,144.69047619047618,56.14285714285714" userdata="3">
+<area dhx_area_id="1496689955578" shape="RECT" coords="164.92857142857142,43.85714285714286,172.92857142857142,51.85714285714286" userdata="3">
+<area dhx_area_id="1496689955579" shape="RECT" coords="193.16666666666666,33.14285714285714,201.16666666666666,41.14285714285714" userdata="3">
+<area dhx_area_id="1496689955580" shape="RECT" coords="221.40476190476193,33.14285714285714,229.40476190476193,41.14285714285714" userdata="3">
+<area dhx_area_id="1496689955581" shape="RECT" coords="249.6428571428571,33.14285714285714,257.6428571428571,41.14285714285714" userdata="3">
+<area dhx_area_id="1496689955582" shape="RECT" coords="277.88095238095235,30.285714285714278,285.88095238095235,38.28571428571428" userdata="3">
+<area dhx_area_id="1496689955583" shape="RECT" coords="306.1190476190476,28.5,314.1190476190476,36.5" userdata="3">
+<area dhx_area_id="1496689955584" shape="RECT" coords="334.35714285714283,13.857142857142861,342.35714285714283,21.85714285714286" userdata="3">
+<area dhx_area_id="1496689955585" shape="RECT" coords="362.5952380952381,22.42857142857143,370.5952380952381,30.42857142857143" userdata="3">
+<area dhx_area_id="1496689955586" shape="RECT" coords="390.8333333333333,20.285714285714278,398.8333333333333,28.285714285714278" userdata="3">
+<area dhx_area_id="1496689955587" shape="RECT" coords="419.07142857142856,19.92857142857143,427.07142857142856,27.92857142857143" userdata="3">
+<area dhx_area_id="1496689955588" shape="RECT" coords="447.3095238095238,28.85714285714286,455.3095238095238,36.85714285714286" userdata="3">
+<area dhx_area_id="1496689955589" shape="RECT" coords="475.54761904761904,30.285714285714278,483.54761904761904,38.28571428571428" userdata="3">
+<area dhx_area_id="1496689955590" shape="RECT" coords="503.7857142857142,28.5,511.7857142857142,36.5" userdata="3">
+<area dhx_area_id="1496689955591" shape="RECT" coords="532.0238095238095,22.42857142857143,540.0238095238095,30.42857142857143" userdata="3">
+<area dhx_area_id="1496689955592" shape="RECT" coords="560.2619047619047,22.07142857142857,568.2619047619047,30.07142857142857" userdata="3">
+<area dhx_area_id="1496689955593" shape="RECT" coords="588.5,6.357142857142861,596.5,14.357142857142861" userdata="3"></map><img src="data:image/gif;base64,R0lGODlhEgASAIAAAP///////yH5BAUUAAEALAAAAAASABIAAAIPjI+py+0Po5y02ouz3pwXADs=" class="dhx_map_img" usemap="#map_1496689955594" onmousedown="return false;"></div></div></td>
+													</tr>		
+												</tbody></table>	
+											</div>	
+										</td>
+										<td width="40%" class="viewPadding"> 
+											<div>
+												<table width="100%" class="tableborder">
+													<tbody><tr class="header">
+														<th width="100%"><div id="weeklyIncoming">Weekly Incoming Messages</div><div style="font-size:xx-small" id="team_vel_header"></div></th>
+													</tr>
+													<tr>
+														<td align="center"><div id="weeklyIncomingMessages" class="chart dhx_chart"><canvas width="729" height="256.5" canvas_id="0" style="z-index: 2; width: 648px; height: 228px;"></canvas><canvas width="729" height="256.5" canvas_id="axis_y" style="width: 648px; height: 228px;"></canvas><div class="dhx_canvas_text dhx_axis_title_y" style="left: -85.5px; top: 102px;">Incoming Messages per Week</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 183.5px; width: 45px;">0</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 152.5px; width: 45px;">15</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 121.5px; width: 45px;">30</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 91.5px; width: 45px;">45</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 60.5px; width: 45px;">60</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 30.5px; width: 45px;">75</div><canvas width="729" height="256.5" canvas_id="axis_x" style="width: 648px; height: 228px;"></canvas><div class="dhx_canvas_text dhx_axis_item_x" style="left: 58px; top: 188.5px;">1</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 84px; top: 188.5px;">2</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 111px; top: 188.5px;">3</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 137px; top: 188.5px;">4</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 163px; top: 188.5px;">5</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 189px; top: 188.5px;">6</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 216px; top: 188.5px;">7</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 242px; top: 188.5px;">8</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 268px; top: 188.5px;">9</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 291px; top: 188.5px;">10</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 318px; top: 188.5px;">11</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 343px; top: 188.5px;">12</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 369px; top: 188.5px;">13</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 396px; top: 188.5px;">14</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 422px; top: 188.5px;">15</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 448px; top: 188.5px;">16</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 474px; top: 188.5px;">17</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 501px; top: 188.5px;">18</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 527px; top: 188.5px;">19</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 553px; top: 188.5px;">20</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 580px; top: 188.5px;">21</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 606px; top: 188.5px;">22</div><div class="dhx_canvas_text dhx_axis_title_x" style="left: 49.5px; top: 209px; width: 578px;">Week</div><div class="dhx_canvas_text" style="left: 55px; top: 151px;">11</div><div class="dhx_canvas_text" style="left: 81px; top: 122px;">25</div><div class="dhx_canvas_text" style="left: 107px; top: 112px;">30</div><div class="dhx_canvas_text" style="left: 133px; top: 129px;">22</div><div class="dhx_canvas_text" style="left: 160px; top: 90px;">41</div><div class="dhx_canvas_text" style="left: 186px; top: 104px;">34</div><div class="dhx_canvas_text" style="left: 212px; top: 94px;">39</div><div class="dhx_canvas_text" style="left: 238px; top: 71px;">50</div><div class="dhx_canvas_text" style="left: 265px; top: 100px;">36</div><div class="dhx_canvas_text" style="left: 291px; top: 112px;">30</div><div class="dhx_canvas_text" style="left: 317px; top: 118px;">27</div><div class="dhx_canvas_text" style="left: 344px; top: 76px;">48</div><div class="dhx_canvas_text" style="left: 370px; top: 78px;">47</div><div class="dhx_canvas_text" style="left: 396px; top: 116px;">28</div><div class="dhx_canvas_text" style="left: 422px; top: 122px;">25</div><div class="dhx_canvas_text" style="left: 449px; top: 102px;">35</div><div class="dhx_canvas_text" style="left: 475px; top: 120px;">26</div><div class="dhx_canvas_text" style="left: 501px; top: 102px;">35</div><div class="dhx_canvas_text" style="left: 527px; top: 92px;">40</div><div class="dhx_canvas_text" style="left: 554px; top: 90px;">41</div><div class="dhx_canvas_text" style="left: 580px; top: 106px;">33</div><div class="dhx_canvas_text" style="left: 606px; top: 96px;">38</div><div style="position: absolute; width: 578px; height: 153px; top: 35px; left: 50px; z-index: 1000;"><map id="map_1496689955531" name="map_1496689955531"><area dhx_area_id="1496689955509" shape="RECT" coords="2,132,23,153" userdata="0">
+<area dhx_area_id="1496689955510" shape="RECT" coords="28.27272727272728,103,49.27272727272728,153" userdata="0">
+<area dhx_area_id="1496689955511" shape="RECT" coords="54.54545454545455,93,75.54545454545455,153" userdata="0">
+<area dhx_area_id="1496689955512" shape="RECT" coords="80.81818181818181,110,101.81818181818181,153" userdata="0">
+<area dhx_area_id="1496689955513" shape="RECT" coords="107.0909090909091,71,128.0909090909091,153" userdata="0">
+<area dhx_area_id="1496689955514" shape="RECT" coords="133.36363636363637,85,154.36363636363637,153" userdata="0">
+<area dhx_area_id="1496689955515" shape="RECT" coords="159.63636363636363,75,180.63636363636363,153" userdata="0">
+<area dhx_area_id="1496689955516" shape="RECT" coords="185.9090909090909,52,206.90909090909088,153" userdata="0">
+<area dhx_area_id="1496689955517" shape="RECT" coords="212.1818181818182,81,233.1818181818182,153" userdata="0">
+<area dhx_area_id="1496689955518" shape="RECT" coords="238.4545454545455,93,259.4545454545455,153" userdata="0">
+<area dhx_area_id="1496689955519" shape="RECT" coords="264.72727272727275,99,285.72727272727275,153" userdata="0">
+<area dhx_area_id="1496689955520" shape="RECT" coords="291,57,312,153" userdata="0">
+<area dhx_area_id="1496689955521" shape="RECT" coords="317.27272727272725,59,338.27272727272725,153" userdata="0">
+<area dhx_area_id="1496689955522" shape="RECT" coords="343.54545454545456,97,364.54545454545456,153" userdata="0">
+<area dhx_area_id="1496689955523" shape="RECT" coords="369.8181818181818,103,390.8181818181818,153" userdata="0">
+<area dhx_area_id="1496689955524" shape="RECT" coords="396.0909090909091,83,417.0909090909091,153" userdata="0">
+<area dhx_area_id="1496689955525" shape="RECT" coords="422.3636363636364,101,443.3636363636364,153" userdata="0">
+<area dhx_area_id="1496689955526" shape="RECT" coords="448.6363636363636,83,469.6363636363636,153" userdata="0">
+<area dhx_area_id="1496689955527" shape="RECT" coords="474.909090909091,73,495.909090909091,153" userdata="0">
+<area dhx_area_id="1496689955528" shape="RECT" coords="501.18181818181824,71,522.1818181818182,153" userdata="0">
+<area dhx_area_id="1496689955529" shape="RECT" coords="527.4545454545455,87,548.4545454545455,153" userdata="0">
+<area dhx_area_id="1496689955530" shape="RECT" coords="553.7272727272727,77,574.7272727272727,153" userdata="0"></map><img src="data:image/gif;base64,R0lGODlhEgASAIAAAP///////yH5BAUUAAEALAAAAAASABIAAAIPjI+py+0Po5y02ouz3pwXADs=" class="dhx_map_img" usemap="#map_1496689955531" onmousedown="return false;"></div></div></td>
+													</tr>		
+												</tbody></table>	
+											</div>	
+										</td>										
+									</tr>
+								</tbody></table>        
+							</td>
+						</tr>    
+
+						<tr width="100%">  
+							<td>
+								
+											<div>
+												<table width="100%" class="tableborder">
+													<tbody><tr class="header">
+														<th width="100%"><div id="weeklyMptTrendHeading">Percentage of tickets with MPT &lt; 100%</div><div style="font-size:xx-small" id="team_vel_header"></div></th>
+															</tr>
+															<tr>
+																<td align="center"><div id="weeklyMptTrend" class="chart dhx_chart"><canvas width="612" height="256.5" canvas_id="legend" style="width: 544px; height: 228px;"></canvas><div class="dhx_chart_legend" style="left: 218px; top: 10px; padding: 3px;"><div style="float: left; padding-left: 25px;" class="dhx_chart_legend_item" series_id="0">% of Tickets</div></div><canvas width="612" height="256.5" canvas_id="0" style="z-index: 2; width: 544px; height: 228px;"></canvas><canvas width="612" height="256.5" canvas_id="axis_y" style="width: 544px; height: 228px;"></canvas><div class="dhx_canvas_text dhx_axis_title_y" style="left: -28.5px; top: 106px;">% of Tickets</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 173.5px; width: 30px;">0</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 148.5px; width: 30px;">20</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 123.5px; width: 30px;">40</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 98.5px; width: 30px;">60</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 73.5px; width: 30px;">80</div><div class="dhx_canvas_text dhx_axis_item_y" style="left: 0px; top: 48.5px; width: 30px;">100</div><canvas width="612" height="256.5" canvas_id="axis_x" style="width: 544px; height: 228px;"></canvas><div class="dhx_canvas_text dhx_axis_item_x" style="left: 34.5px; top: 178.5px;">1</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 53px; top: 178.5px;">2</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 77px; top: 178.5px;">3</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 100px; top: 178.5px;">4</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 123px; top: 178.5px;">5</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 146px; top: 178.5px;">6</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 170px; top: 178.5px;">7</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 193px; top: 178.5px;">8</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 216px; top: 178.5px;">9</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 236px; top: 178.5px;">10</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 260px; top: 178.5px;">11</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 282px; top: 178.5px;">12</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 305px; top: 178.5px;">13</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 329px; top: 178.5px;">14</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 352px; top: 178.5px;">15</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 375px; top: 178.5px;">16</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 399px; top: 178.5px;">21</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 422px; top: 178.5px;">17</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 445px; top: 178.5px;">18</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 468px; top: 178.5px;">19</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 492px; top: 178.5px;">20</div><div class="dhx_canvas_text dhx_axis_item_x" style="left: 515px; top: 178.5px;">22</div><div class="dhx_canvas_text dhx_axis_title_x" style="left: 34.5px; top: 209px; width: 489px;">Week</div><div class="dhx_canvas_text" style="left: 21px; top: 117.5px;">30%</div><div class="dhx_canvas_text" style="left: 43px; top: 115px;">32%</div><div class="dhx_canvas_text" style="left: 67px; top: 110px;">36%</div><div class="dhx_canvas_text" style="left: 90px; top: 105px;">40%</div><div class="dhx_canvas_text" style="left: 113px; top: 101.25px;">43%</div><div class="dhx_canvas_text" style="left: 136px; top: 96.25px;">47%</div><div class="dhx_canvas_text" style="left: 160px; top: 101.25px;">43%</div><div class="dhx_canvas_text" style="left: 183px; top: 116.25px;">31%</div><div class="dhx_canvas_text" style="left: 206px; top: 116.25px;">31%</div><div class="dhx_canvas_text" style="left: 230px; top: 116.25px;">31%</div><div class="dhx_canvas_text" style="left: 253px; top: 125px;">24%</div><div class="dhx_canvas_text" style="left: 276px; top: 125px;">24%</div><div class="dhx_canvas_text" style="left: 299px; top: 130px;">20%</div><div class="dhx_canvas_text" style="left: 323px; top: 130px;">20%</div><div class="dhx_canvas_text" style="left: 346px; top: 130px;">20%</div><div class="dhx_canvas_text" style="left: 369px; top: 90px;">52%</div><div class="dhx_canvas_text" style="left: 393px; top: 78.75px;">61%</div><div class="dhx_canvas_text" style="left: 416px; top: 78.75px;">61%</div><div class="dhx_canvas_text" style="left: 439px; top: 70px;">68%</div><div class="dhx_canvas_text" style="left: 462px; top: 73.75px;">65%</div><div class="dhx_canvas_text" style="left: 486px; top: 75px;">64%</div><div class="dhx_canvas_text" style="left: 509px; top: 80px;">60%</div><div style="position: absolute; width: 489px; height: 125px; top: 53px; left: 35px; z-index: 1000;"><map id="map_1496689955547" name="map_1496689955547"><area dhx_area_id="1" shape="RECT" coords="-4,83.5,4,91.5" userdata="0">
+<area dhx_area_id="2" shape="RECT" coords="18.785714285714285,81,26.785714285714285,89" userdata="0">
+<area dhx_area_id="3" shape="RECT" coords="42.07142857142857,76,50.07142857142857,84" userdata="0">
+<area dhx_area_id="4" shape="RECT" coords="65.35714285714286,71,73.35714285714286,79" userdata="0">
+<area dhx_area_id="5" shape="RECT" coords="88.64285714285714,67.25,96.64285714285714,75.25" userdata="0">
+<area dhx_area_id="6" shape="RECT" coords="111.92857142857142,62.25,119.92857142857142,70.25" userdata="0">
+<area dhx_area_id="7" shape="RECT" coords="135.21428571428572,67.25,143.21428571428572,75.25" userdata="0">
+<area dhx_area_id="8" shape="RECT" coords="158.5,82.25,166.5,90.25" userdata="0">
+<area dhx_area_id="9" shape="RECT" coords="181.78571428571428,82.25,189.78571428571428,90.25" userdata="0">
+<area dhx_area_id="10" shape="RECT" coords="205.07142857142856,82.25,213.07142857142856,90.25" userdata="0">
+<area dhx_area_id="11" shape="RECT" coords="228.35714285714283,91,236.35714285714283,99" userdata="0">
+<area dhx_area_id="12" shape="RECT" coords="251.6428571428571,91,259.6428571428571,99" userdata="0">
+<area dhx_area_id="13" shape="RECT" coords="274.92857142857144,96,282.92857142857144,104" userdata="0">
+<area dhx_area_id="14" shape="RECT" coords="298.2142857142857,96,306.2142857142857,104" userdata="0">
+<area dhx_area_id="15" shape="RECT" coords="321.5,96,329.5,104" userdata="0">
+<area dhx_area_id="16" shape="RECT" coords="344.7857142857143,56,352.7857142857143,64" userdata="0">
+<area dhx_area_id="201" shape="RECT" coords="368.07142857142856,44.75,376.07142857142856,52.75" userdata="0">
+<area dhx_area_id="1493943958225" shape="RECT" coords="391.35714285714283,44.75,399.35714285714283,52.75" userdata="0">
+<area dhx_area_id="1494149277233" shape="RECT" coords="414.6428571428571,36,422.6428571428571,44" userdata="0">
+<area dhx_area_id="1494720224957" shape="RECT" coords="437.9285714285714,39.75,445.9285714285714,47.75" userdata="0">
+<area dhx_area_id="1495339229281" shape="RECT" coords="461.21428571428567,41,469.21428571428567,49" userdata="0">
+<area dhx_area_id="1496549389718" shape="RECT" coords="484.5,46,492.5,54" userdata="0"></map><img src="data:image/gif;base64,R0lGODlhEgASAIAAAP///////yH5BAUUAAEALAAAAAASABIAAAIPjI+py+0Po5y02ouz3pwXADs=" class="dhx_map_img" usemap="#map_1496689955547" onmousedown="return false;"></div></div></td>
+															</tr>		
+												</tbody></table>	
+											</div>	
+							 </td>
+                             <td class="tablewidth viewPadding">
+								<table width="100%" class="tableborder">
+									<tbody><tr>
+										<td id="userCountContainer">
+											<div align="center" class="metricsHeader header">SAP ME Product Releases</div>
+											<center>
+												<div id="productReleaseView" style="vertical-align: top; height: 230px; width: 539.2px; cursor: default;" align="center" class=" gridbox gridbox_material isModern"><div class="xhdr" style="width: 100%; height: 44px; overflow: hidden; position: relative;"><div class="dhxgrid_sort_desc" style="display: none; position: absolute;"></div><table cellpadding="0" cellspacing="0" class="hdr" style="width: 539px; table-layout: fixed; margin-right: 20px; padding-right: 20px;"><tbody><tr style="height: auto;"><th style="height: 0px; width: 83px;"></th><th style="height: 0px; width: 83px;"></th><th style="height: 0px; width: 83px;"></th><th style="height: 0px; width: 138px;"></th><th style="height: 0px; width: 152px;"></th></tr><tr><td style="font-weight: bold; text-align: left;"><div class="hdrcell">Major Rel</div></td><td style="font-weight: bold; text-align: left;"><div class="hdrcell"> Current Rel.</div></td><td style="font-weight: bold; text-align: left;"><div class="hdrcell"> Next Rel.</div></td><td style="font-weight: bold; text-align: left;"><div class="hdrcell"> Rel. Date</div></td><td><div class="hdrcell"> Comments</div></td></tr></tbody></table></div><div class="objbox" style="width: 100%; overflow-x: hidden; overflow-y: auto; height: 186px;"><table cellpadding="0" cellspacing="0" class="obj" style="width: 539px; table-layout: fixed;"><tbody><tr style="height: auto;"><th style="height: 0px; width: 83px;"></th><th style="height: 0px; width: 83px;"></th><th style="height: 0px; width: 83px;"></th><th style="height: 0px; width: 138px;"></th><th style="height: 0px; width: 152px;"></th></tr><tr class=" ev_material"><td align="left" valign="middle">15.0 SP3</td><td align="left" valign="middle">Patch 44</td><td align="left" valign="middle">Patch 45</td><td align="left" valign="middle">2017-06-02T09:01:25+02:00</td><td align="left" valign="middle">Correction Close - June 1, 2017</td></tr><tr class=" odd_material"><td align="left" valign="middle">15.1 SP1</td><td align="left" valign="middle">Patch 15</td><td align="left" valign="middle">Patch 16</td><td align="left" valign="middle">2017-06-16T09:01:25+02:00</td><td align="left" valign="middle">Correction Close is June 14, 2017</td></tr><tr class=" ev_material"><td align="left" valign="middle">15.1 SP3</td><td align="left" valign="middle">Patch 7</td><td align="left" valign="middle">Patch 8</td><td align="left" valign="middle">2017-06-23T09:01:25+02:00</td><td align="left" valign="middle">Correction Close - June 21, 2017</td></tr></tbody></table></div></div>    
+                                            </center>
+										</td>
+									</tr>
+								</tbody></table>
+							</td>
+							<td class="tablewidth viewPadding">
+								<table width="100%" class="tableborder">
+									<tbody><tr>
+										<td id="customerCountContainer">
+											<div align="center" class="metricsHeader header" id="css_title">SAP ME Customer Go-Lives</div>
+											<center>
+												<div id="customerGoLiveView" style="vertical-align: top; height: 230px; width: 535.2px; cursor: default;" align="center" class=" gridbox gridbox_material isModern"><div class="xhdr" style="width: 100%; height: 66px; overflow: hidden; position: relative;"><div class="dhxgrid_sort_desc" style="display: none; position: absolute;"></div><table cellpadding="0" cellspacing="0" class="hdr" style="width: 517px; table-layout: fixed; margin-right: 20px; padding-right: 20px;"><tbody><tr style="height: auto;"><th style="height: 0px; width: 53px;"></th><th style="height: 0px; width: 53px;"></th><th style="height: 0px; width: 53px;"></th><th style="height: 0px; width: 53px;"></th><th style="height: 0px; width: 53px;"></th><th style="height: 0px; width: 252px;"></th></tr><tr><td style="font-weight: bold; text-align: left;"><div class="hdrcell">Customer</div></td><td style="font-weight: bold; text-align: left;"><div class="hdrcell"> Location</div></td><td style="font-weight: bold; text-align: left;"><div class="hdrcell"> Prod. Ver.</div></td><td style="font-weight: bold; text-align: left;"><div class="hdrcell"> Go-Live Date</div></td><td style="font-weight: bold; text-align: left;"><div class="hdrcell"> Dev. Angel</div></td><td style="font-weight: bold; text-align: left;"><div class="hdrcell"> Comments</div></td></tr></tbody></table></div><div class="objbox" style="width: 100%; overflow-x: hidden; overflow-y: auto; height: 164px;"><table cellpadding="0" cellspacing="0" class="obj" style="width: 517px; table-layout: fixed;"><tbody><tr style="height: auto;"><th style="height: 0px; width: 53px;"></th><th style="height: 0px; width: 53px;"></th><th style="height: 0px; width: 53px;"></th><th style="height: 0px; width: 53px;"></th><th style="height: 0px; width: 53px;"></th><th style="height: 0px; width: 252px;"></th></tr><tr class=" ev_material"><td align="left" valign="middle">Harley-Davidson</td><td align="left" valign="middle">AMER</td><td align="left" valign="middle">15.1.3</td><td align="left" valign="middle">&nbsp;</td><td align="left" valign="middle">John Cohenour</td><td align="left" valign="middle">Tentative Date: Oct-Nov 2017.
+Upgrade from ME 5.2 to 15.1.3 for York and Kansas City
+Go Live &amp; Plant Start-Ups
+Sep 30:  York plant migration
+Oct 28:  Kansas City plant migration
+Hyper-care: 3-4 weeks for each site after migration
+MaxAttention has a limited engagement through cutover and hyper-care, with a concentration on operations (APO, PP, ME, PCO &amp; associated CDP) and infrastructure.   Richard Palak is the TQM. </td></tr></tbody></table></div></div>    
+                                            </center>
+										</td>
+									</tr>
+								</tbody></table>
+							</td>
+						</tr>
+
+				</tbody></table>             
+
+						
+					
+
+</body></html>

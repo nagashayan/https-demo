@@ -1,0 +1,67 @@
+
+<!-- saved from url=(0074)https://dewdfgwp00746.wdf.sap.corp:8181/md/dashboard/md_dev_dashboard.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <meta http-equiv="Pragma" content="no-cache">
+    <link rel="shortcut icon" href="https://dewdfgwp00746.wdf.sap.corp:8181/md/dashboard/images/favicon.png">
+    <link href="./md_dev_dashboard_files/main.css" media="all" rel="stylesheet" type="text/css">
+    <script src="./md_dev_dashboard_files/jquery-1.9.1.min.js.download"></script>
+    <script src="./md_dev_dashboard_files/dashboard_config.js.download"></script>    
+	<script>
+      $(document).ready(function(){
+		  //$("#message_feed").html(localStorage.getItem("current_messsage_feed")); //Set the previous message.
+		  setTimeout(setMessageFeed, 60*1000); //Start the message feed after a minute.
+		  setInterval(setMessageFeed, MD_CONFIG_MESSAGE_FEED_FETCH_INTERVAL);
+	 });	
+		
+	 function setMessageFeed(){	
+              jQuery.support.cors = true;
+                if (!window.location.origin) {
+                  window.location.origin = "https://localhost:8999/";
+              }
+              $.ajaxSetup({ cache: false });		
+              $.ajax({dataType: "json", url:MD_CONFIG_MESSAGE_FEED_URL, xhrFields: {}, cache:false, beforeSend: function (xhr) { xhr.setRequestHeader ('Content-Type', 'text/plain'); }, success:function(result){   
+			  	   var message = "";
+				   $(result).each(function(){  
+						message = message + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + $(this)[0].msg;					 			 
+				   });
+				   $("#message_feed").html(message);	
+				   localStorage.setItem("current_messsage_feed", message);				   			   				   
+                }, error:function(jqXHR, textStatus, errorThrown){ console.log("Error on getMessageFeed(): " + errorThrown);} });
+      }
+	  
+	  /*function setMessageFeed(){	
+              jQuery.support.cors = true;
+                if (!window.location.origin) {
+                  window.location.origin = "https://localhost:8999/";
+              }
+              $.ajaxSetup({ cache: false });	
+			  var message = "";	
+              $.ajax({dataType: "json", url:MD_CONFIG_PUBLIC_FEED_URL, xhrFields: {}, cache:false, beforeSend: function (xhr) {  }, success:function(result){   
+			  	   			message = message + "           " + result.contents.quotes[0].quote + " - "+result.contents.quotes[0].author;
+					
+				   $("#message_feed").html(message);				   				   
+                }, error:function(jqXHR, textStatus, errorThrown){ console.log("Error on getMessageFeed(): " + errorThrown);} });
+      }*/	
+			
+				
+    </script>    
+</head>
+
+<body class="bgColor">
+	<center>
+    <h2 class="header0" align="center">
+		  <div id="dashboard_title" align="center"><img src="./md_dev_dashboard_files/SAP_scrn_R.png" width="70" height="35" style="vertical-align:middle">SAP ME Maintenance Development Dashboard</div>		
+	</h2>
+<marquee id="message_feed" behavior="scroll" scrollamount="5" direction="left" width="100%" class="msgfeed msgfeed_theme_dark_blue2">&nbsp;</marquee>
+ <table align="center" width="100%" height="1600px">
+      <tbody><tr>
+          <td>
+                            <iframe id="md_metrics_frame" src="./md_dev_dashboard_files/md_metrics_view.html" width="100%" height="100%" frameborder="0" seamless="" scrolling="no" marginheight="0" marginwidth="0"></iframe>                       
+                    </td></tr>
+                </tbody></table>  
+                           
+                  
+    
+    </center>
+
+</body></html>

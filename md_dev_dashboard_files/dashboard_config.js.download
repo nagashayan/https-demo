@@ -1,0 +1,57 @@
+var MD_CONFIG_TITLE = "SAP ME Development Maintenance Dashboard";
+
+var MD_CONFIG_METRIC_VIEW_REFRESH_INTERVAL = 60000*10; //Update every 5 minutes.
+
+//CSS View Configuration
+//var MD_CONFIG_DEV_SUPPORT_CSS_URL = "https://support.wdf.sap.corp/sap/bc/devdb/saved_search?search_id=0090FAE68E8C1ED78CB1D4EDCF21A0C8&sap-client=001";
+var MD_CONFIG_DEV_SUPPORT_CSS_URL = "https://support.wdf.sap.corp/sap/bc/devdb/saved_search?search_id=0090FAE68C681ED7909087D945B2E0CF&sap-client=001";
+var MD_CONFIG_PROD_SUPPORT_CSS_URL = "https://support.wdf.sap.corp/sap/bc/devdb/saved_search?search_id=0090FAE68E8C1ED78CB1D6E4EDB980C8&sap-client=001";
+var MD_CONFIG_TOTAL_TICKETS_CSS_URL = "https://support.wdf.sap.corp/sap/bc/devdb/saved_search?search_id=0090FAE68C681ED790907C3113EC60CF&sap-client=001";
+var MD_CONFIG_CURRENT_WEEK_CSS_URL  ="https://support.wdf.sap.corp/sap/bc/devdb/saved_search?search_id=0090FAE68C221ED78BA1F5F86C7E20CA&sap-client=001"; //Actually last 14 days tickets.
+
+//MPT Calculation searches
+var MD_CONFIG_MPT_ALL_CURRENT_WEEK_CSS_URL = "https://support.wdf.sap.corp/sap/bc/devdb/saved_search?search_id=0090FAE68E8C1ED78CA3206C16F220C8&sap-client=001";
+var MD_CONFIG_MPT_EXCEEDED_TICKETS_URL = "https://support.wdf.sap.corp/sap/bc/devdb/saved_search?search_id=0090FAE68E8C1ED78CA324B389E700C8&sap-client=001";
+
+//Retrieve Trend Data for Charts
+var MD_CONFIG_BACKLOG_TREND_URL = "https://dewdfgwp00746.wdf.sap.corp:8181/md/rest/weeklycss/bltrendsum/2017";
+var MD_CONFIG_WEEKLY_INCOMING_MESSAGES_TREND_URL = "https://dewdfgwp00746.wdf.sap.corp:8181/md/rest/weeklycss/weeklytrend/2017";
+var MD_CONFIG_WEEKLY_MPT_TREND_URL  = "https://dewdfgwp00746.wdf.sap.corp:8181/md/rest/weeklympt/";
+
+
+//Chart Configuration For Weekly CSS backlog Trend.
+var MD_CONFIG_WKLY_BKLOG_CHART_TITLE = "Weekly CSS Backlog Trend"
+var MD_CONFIG_WKLY_BKLOG_CHART_MAX_VALUE = 350;
+var MD_CONFIG_WKLY_BKLOG_CHART_STEP_VALUE = 50;
+var MD_CONFIG_WKLY_BKLOG_CHART_Y_LABEL = "";
+var MD_CONFIG_WKLY_BKLOG_CHART_X_LABEL = "Week";
+
+//Chart Configuration For Weekly Incoming Messages.
+var MD_CONFIG_WKLY_INC_MSG_CHART_TITLE = "Weekly Incoming Messages"
+var MD_CONFIG_WKLY_INC_MSG_CHART_MAX_VALUE = 75;
+var MD_CONFIG_WKLY_INC_MSG_CHART_STEP_VALUE = 15;
+var MD_CONFIG_WKLY_INC_MSG_CHART_Y_LABEL = "Incoming Messages per Week";
+var MD_CONFIG_WKLY_INC_MSG_CHART_X_LABEL = "Week";
+
+//Chart Configuration For Weekly MPT Trend.
+var MD_CONFIG_WKLY_MPT_CHART_TITLE = "Percentage of tickets with MPT < 100%"
+var MD_CONFIG_WKLY_MPT_CHART_MAX_VALUE = 100;
+var MD_CONFIG_WKLY_MPT_CHART_STEP_VALUE = 20;
+var MD_CONFIG_WKLY_MPT_CHART_Y_LABEL = "% of Tickets";
+var MD_CONFIG_WKLY_MPT_CHART_X_LABEL = "Week";
+
+//POST Weekly Data
+var POST_WEEKLY_DATA_URL = "https://dewdfgwp00746.wdf.sap.corp:8181/md/rest/weeklycss";
+var POST_WEEKLY_MPT = "https://dewdfgwp00746.wdf.sap.corp:8181/md/rest/weeklympt";
+
+//MESSAGE FEED URL
+var MD_CONFIG_MESSAGE_FEED_URL = "https://dewdfgwp00746.wdf.sap.corp:8181/md/rest/feed/today";
+var MD_CONFIG_MESSAGE_FEED_FETCH_INTERVAL = 60000*30; //30 minutes
+var MD_CONFIG_PUBLIC_FEED_URL = "https://crossorigin.me/https://quotes.rest/qod.json?category=management";
+
+//PRODUCT RELEASE DATA
+var MD_CONFIG_PRODUCT_RELEASE_URL = "https://dewdfgwp00746.wdf.sap.corp:8181/md/rest/productrelease";
+var MD_CONFIG_CUSTOMER_GO_LIVE_URL = "https://dewdfgwp00746.wdf.sap.corp:8181/md/rest/customergolive";
+
+
+
